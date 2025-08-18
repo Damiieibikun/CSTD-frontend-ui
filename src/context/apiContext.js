@@ -32,6 +32,9 @@ const[publications, setPublications] = useState([])
 // Feedback
 const [feedbackList, setFeedbackList] = useState([])
 
+// News
+const [news, setNews] = useState([])
+
 // Footer
 
 const [footerData, setFooterData] = useState({})
@@ -471,7 +474,7 @@ const deleteProject = async (cat, id) => {
 
 
 // PUBLICATIONS
-const getPublications = useCallback(async (cat) => { 
+const getPublications = useCallback(async () => { 
     setLoading(true)
   try {
     const response = await axios.get(`${BASEURL}/pub/getpublications`);
@@ -553,42 +556,98 @@ const deletePublication = async (id) => {
      setPageResponse({
             success: err.response.data.success,
             message: err.response.data.message
-        })
-   
+        })   
   }
     
 }; 
 
 // NEWS
 
-const getNews = async () => {
-    try {
-        console.log('Get news')
-    } catch (error) {
-        console.log(error)
+const getNews = useCallback(async () => { 
+    setLoading(true)
+  try {
+    const response = await axios.get(`${BASEURL}/news/fetchnews`);
+    if(response.data.success){
+        setLoading(false)
+        setNews(response.data.data)
     }
-}
+
+  } catch (err) {
+    console.error(err);
+    setLoading(false)
+  }
+}, [BASEURL]);
+
+
+
 const postNews = async (data) => {
+    setLoading(true)
     try {
-        console.log(data)
-         console.log('Post news')
-    } catch (error) {
-        console.log(error)
+    const response = await axios.post(`${BASEURL}/news/createnews`, data);
+    if(response.data.success){
+        setLoading(false)
+        getNews()
+         setPageResponse({
+            success: response.data.success,
+            message: response.data.message
+        })       
     }
+
+  } catch (err) {
+    console.error(err);
+    setLoading(false)
+    setPageResponse({
+            success: err.response.data.success,
+            message: err.response.data.message
+        })
+    
+  }
 }
 const editNews = async (id, data) => {
-    try {
-        console.log('Edit news')
-    } catch (error) {
-        console.log(error)
+    setLoading(true)
+  try {
+    const response = await axios.put(`${BASEURL}/news/edit/${id}`, data);
+    if(response.data.success){
+        setLoading(false)
+        getNews()
+         setPageResponse({
+            success: response.data.success,
+            message: response.data.message
+        })       
     }
+
+  } catch (err) {
+    console.error(err);
+    setLoading(false)
+    setPageResponse({
+            success: err.response.data.success,
+            message: err.response.data.message
+        })
+    
+  }
 }
 const deleteNews = async (id) => {
-    try {
-        console.log('Delete news')
-    } catch (error) {
-         console.log(error)
+   setLoading(true)
+  try {
+    const response = await axios.delete(`${BASEURL}/news/delete/${id}`);
+    if(response.data.success){
+        setLoading(false)      
+         setPageResponse({
+            success: response.data.success,
+            message: response.data.message
+        })
+        getNews()
+       
     }
+
+  } catch (err) {
+    console.error(err);
+    setLoading(false)
+     setPageResponse({
+            success: err.response.data.success,
+            message: err.response.data.message
+        })   
+  }
 }
  
 
@@ -771,7 +830,7 @@ const values = {
         deletePublication,
 
         // NEWS,
-
+        news,
         getNews,
         postNews,
         editNews,

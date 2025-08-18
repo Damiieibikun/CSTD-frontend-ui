@@ -101,7 +101,7 @@ const Sidenav = ({ loggedAdmin }) => {
           { pageName: 'Papers and publications', icon: <FaFilePdf />, path: '/publications'},          
           { pageName: 'News', icon: <FaRegNewspaper />, path: '/newslist'},          
           { pageName: 'Events', icon: <FaCalendarAlt />, path: '/eventslist'},          
-          { pageName: 'Media', icon: <FaFileImage />, path: '/medialist'},          
+          { pageName: 'Gallery', icon: <FaFileImage />, path: '/gallerylist'},          
           { pageName: 'Client feedback', icon: <FaRegCommentDots />, path: '/feedback' },
           { pageName: 'Change Password', icon: <RiLockPasswordLine />, path: '/changepassword' }
         ];
@@ -130,7 +130,7 @@ const Sidenav = ({ loggedAdmin }) => {
           },
           { pageName: 'News', icon: <FaRegNewspaper />, path: '/newslist'},          
           { pageName: 'Events', icon: <FaCalendarAlt />, path: '/eventslist'},          
-          { pageName: 'Media', icon: <FaFileImage />, path: '/medialist'}, 
+          { pageName: 'Gallery', icon: <FaFileImage />, path: '/gallerylist'}, 
           { pageName: 'Change Password', icon: <RiLockPasswordLine />, path: '/changepassword' }
         ];
       default:

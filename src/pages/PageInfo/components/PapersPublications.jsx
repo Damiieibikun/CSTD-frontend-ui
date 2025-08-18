@@ -18,7 +18,7 @@ const PapersPublications = () => {
         deletePublication, pageResponse,
         setPageResponse} = useContext(ApiContext)
   const [editingId, setEditingId] = useState(null);
-
+  const[deleteModal, setDeleteModal] = useState ({open:false, id: ''})
   const {
     register,
     handleSubmit,
@@ -60,15 +60,14 @@ const PapersPublications = () => {
   };
 
   const handleDelete = (id) => {
-    // deletePublication(id);
-    setDeleteModal({open:true, id: id})
+      setDeleteModal({open:true, id: id})
   };
 
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredPublications, setFilteredPublications] = useState(publications);
   
-  const[deleteModal, setDeleteModal] = useState ({open:false, id: ''})
+
 
   useEffect(() => {
     getPublications();
