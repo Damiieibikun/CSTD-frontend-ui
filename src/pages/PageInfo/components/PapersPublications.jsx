@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Editor from '../../../components/Editor';
-import { FaTrash, FaExternalLinkAlt, FaUser, FaCalendarAlt, FaEdit, FaExclamationTriangle } from 'react-icons/fa';
+import { FaTrash, FaExternalLinkAlt, FaUser, FaEdit, FaExclamationTriangle } from 'react-icons/fa';
 import { publicationSchema } from '../../../validators/formValidation';
 import { ApiContext } from '../../../context/apiContext';
 import { IoIosClose } from 'react-icons/io';
