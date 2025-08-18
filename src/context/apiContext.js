@@ -35,6 +35,9 @@ const [feedbackList, setFeedbackList] = useState([])
 // News
 const [news, setNews] = useState([])
 
+// Events
+const [events, setEvents] = useState([])
+
 // Footer
 
 const [footerData, setFooterData] = useState({})
@@ -578,8 +581,6 @@ const getNews = useCallback(async () => {
   }
 }, [BASEURL]);
 
-
-
 const postNews = async (data) => {
     setLoading(true)
     try {
@@ -637,6 +638,92 @@ const deleteNews = async (id) => {
             message: response.data.message
         })
         getNews()
+       
+    }
+
+  } catch (err) {
+    console.error(err);
+    setLoading(false)
+     setPageResponse({
+            success: err.response.data.success,
+            message: err.response.data.message
+        })   
+  }
+}
+
+    // EVENTS
+const getEvents = useCallback(async () => { 
+    setLoading(true)
+  try {
+    const response = await axios.get(`${BASEURL}/events/fetchevents`);
+    if(response.data.success){
+        setLoading(false)
+        setEvents(response.data.data)
+    }
+
+  } catch (err) {
+    console.error(err);
+    setLoading(false)
+  }
+}, [BASEURL]);
+
+const postEvent = async (data) => {
+    setLoading(true)
+    try {
+    const response = await axios.post(`${BASEURL}/events/createevent`, data);
+    if(response.data.success){
+        setLoading(false)
+        getEvents()
+         setPageResponse({
+            success: response.data.success,
+            message: response.data.message
+        })       
+    }
+
+  } catch (err) {
+    console.error(err);
+    setLoading(false)
+    setPageResponse({
+            success: err.response.data.success,
+            message: err.response.data.message
+        })
+    
+  }
+}
+const editEvent = async (id, data) => {
+    setLoading(true)
+  try {
+    const response = await axios.put(`${BASEURL}/events/edit/${id}`, data);
+    if(response.data.success){
+        setLoading(false)
+        getEvents()
+         setPageResponse({
+            success: response.data.success,
+            message: response.data.message
+        })       
+    }
+
+  } catch (err) {
+    console.error(err);
+    setLoading(false)
+    setPageResponse({
+            success: err.response.data.success,
+            message: err.response.data.message
+        })
+    
+  }
+}
+const deleteEvent = async (id) => {
+   setLoading(true)
+  try {
+    const response = await axios.delete(`${BASEURL}/events/delete/${id}`);
+    if(response.data.success){
+        setLoading(false)      
+         setPageResponse({
+            success: response.data.success,
+            message: response.data.message
+        })
+        getEvents()
        
     }
 
@@ -835,6 +922,13 @@ const values = {
         postNews,
         editNews,
         deleteNews,
+
+        // EVENTS
+        events, 
+        getEvents, 
+        postEvent, 
+        editEvent, 
+        deleteEvent,
 
         // FEEDBACK
         getFeedback,
