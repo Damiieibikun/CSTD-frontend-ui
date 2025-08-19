@@ -1,15 +1,18 @@
-import React from 'react'
-
 const Footer = () => {
-   const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
 
   return (
-    <footer className='py-7 mt-5 bg-gray-50 shadow-sm'>
-      <p className='text-center text-gray-600'>&copy; {currentYear} CSTD. All rights reserved.</p>
-      {/* Add information here if needed */}
-      
+    <footer className="py-5 bg-gradient-to-r from-gray-100 to-white shadow-inner">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="flex flex-col items-center justify-center">
+         
+          <p className="text-gray-700 text-sm font-light">
+            &copy; {currentYear} CSTD. All rights reserved.
+          </p>
+        </div>
+      </div>
     </footer>
   );
 }
 
-export default Footer
+export default Footer;
