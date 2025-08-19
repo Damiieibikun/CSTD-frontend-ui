@@ -4,13 +4,23 @@ import { useNavigate } from "react-router-dom"
 
 const DashboardAdmin = () => {
   const navigate = useNavigate()
-  const{storedAdmin} = useContext(ApiContext)
+  const{storedAdmin, loading, getPageLinks,        
+        links, projects,
+        getProjects, publications,
+        getPublications} = useContext(ApiContext)
 
   useEffect(()=>{
     if (storedAdmin?.role !== 'admin') {
         navigate('/');
       }
   }, [navigate, storedAdmin?.role ])
+
+  useEffect(()=>{
+    getPageLinks()
+    getProjects()
+    getPublications()
+    
+  }, [getPageLinks, getProjects, getPublications])
 
 
   return (
