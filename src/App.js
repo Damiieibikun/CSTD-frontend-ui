@@ -20,7 +20,7 @@ import { Loader } from './components/Loader';
 import FeedBack from './pages/PageInfo/components/FeedBack';
 import News from './pages/PageInfo/components/News';
 import Events from './pages/PageInfo/components/Events';
-import Gallery from './pages/PageInfo/components/Gallery';
+
 
 function App() {
   const { links, getPageLinks } = useContext(ApiContext);
@@ -91,14 +91,7 @@ function App() {
             </DashboardLayout>
           }
         />
-        <Route
-          path="/gallerylist"
-          element={
-            <DashboardLayout>
-              < Gallery/>
-            </DashboardLayout>
-          }
-        />
+        
         <Route
           path="/pastprojects"
           element={

@@ -9,8 +9,7 @@ import {
   FaFilePdf,
   FaRegCommentDots,
   FaRegNewspaper,
-  FaCalendarAlt,
-  FaFileImage 
+  FaCalendarAlt,   
 } from 'react-icons/fa';
 import * as FaIcons from 'react-icons/fa';
 import { RiLockPasswordLine } from "react-icons/ri";
@@ -100,8 +99,7 @@ const Sidenav = ({ loggedAdmin }) => {
           { pageName: 'Past Projects', icon: <FaTasks />, path: '/pastprojects'},
           { pageName: 'Papers and publications', icon: <FaFilePdf />, path: '/publications'},          
           { pageName: 'News', icon: <FaRegNewspaper />, path: '/newslist'},          
-          { pageName: 'Events', icon: <FaCalendarAlt />, path: '/eventslist'},          
-          { pageName: 'Gallery', icon: <FaFileImage />, path: '/gallerylist'},          
+          { pageName: 'Events', icon: <FaCalendarAlt />, path: '/eventslist'},         
           { pageName: 'Client feedback', icon: <FaRegCommentDots />, path: '/feedback' },
           { pageName: 'Change Password', icon: <RiLockPasswordLine />, path: '/changepassword' }
         ];
@@ -129,8 +127,7 @@ const Sidenav = ({ loggedAdmin }) => {
             items: [...navMediaLinks]
           },
           { pageName: 'News', icon: <FaRegNewspaper />, path: '/newslist'},          
-          { pageName: 'Events', icon: <FaCalendarAlt />, path: '/eventslist'},          
-          { pageName: 'Gallery', icon: <FaFileImage />, path: '/gallerylist'}, 
+          { pageName: 'Events', icon: <FaCalendarAlt />, path: '/eventslist'},        
           { pageName: 'Change Password', icon: <RiLockPasswordLine />, path: '/changepassword' }
         ];
       default:
