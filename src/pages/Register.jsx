@@ -33,7 +33,7 @@ const Register = () => {
         registerAdmin
     } = useContext(AppContext)
 
-    const { loading, registered, registerErr} = useContext(ApiContext)
+    const { loading, registered, setRegistered, registerErr} = useContext(ApiContext)
 
 
 if(loading) return (
@@ -48,6 +48,7 @@ if (registered) return(
    <InfoPage
     message={'Registered Successfully!'}
     redirect={'/'}
+    redirectAction={()=> setRegistered(false)}
     fontstyles = {'text-3xl py-3'}
     buttoncaption = {'Proceed to Login'}
     />

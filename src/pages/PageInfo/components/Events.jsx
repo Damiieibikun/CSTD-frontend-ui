@@ -165,12 +165,11 @@ const Events = () => {
 
       setUploadProgress(100);
       
-      // Reset form and states
+  
       reset();
       removeFile();
       setEditingId(null);
-      
-      // Reset progress after a brief delay
+     
       setTimeout(() => setUploadProgress(0), 1000);
       
     } catch (error) {

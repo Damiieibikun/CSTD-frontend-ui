@@ -153,7 +153,7 @@ const Pastprojects = () => {
 
        {showProject &&  <Modals
         closeModal={()=>{setShowProject(false); reset() }}    
-          modalStyles='w-[75%] mx-auto h-[500px] overflow-y-scroll'
+          modalStyles='w-[70%] mx-auto h-[500px] overflow-y-scroll'
           cancel='Close'
           form={<div>        
           <Forms      

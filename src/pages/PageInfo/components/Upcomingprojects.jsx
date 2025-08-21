@@ -90,9 +90,8 @@ const Upcomingprojects = () => {
 
   
   const handleEdit = (project) => {
-    console.log("Edit project:", project);
-    // Implement your edit logic here
-     setShowProject(true)    
+  
+    setShowProject(true)    
     setEditing(true)
     setValue('id', project._id);
     setValue('title', project.title);
@@ -151,7 +150,7 @@ const Upcomingprojects = () => {
 
        {showProject &&  <Modals
         closeModal={()=>{setShowProject(false); reset()}}    
-          modalStyles='w-[90%] mx-auto h-[500px] overflow-y-scroll'
+          modalStyles='w-[70%] mx-auto h-[500px] overflow-y-scroll'
           cancel='Close'
           form={<div>        
           <Forms      

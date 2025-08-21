@@ -46,6 +46,7 @@ const storedAdmin = JSON.parse(localStorage.getItem('loggedCSTDAdmin'));
 const BASEURL = process.env.REACT_APP_ENDPOINT
 
 const createWebmaster = async (data) => {
+  console.log('loading')
     setLoading(true)
     setregisterErr('')
     try {
@@ -848,6 +849,7 @@ const values = {
         // create admin
         createAdmin,
         registered,
+        setRegistered,
 
         // edit admin
         editAdmin,
