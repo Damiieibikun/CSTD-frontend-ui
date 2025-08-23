@@ -103,7 +103,6 @@ const pageSchema = childLinkSchema.extend({
 const newsSchema = z.object({
   title: z.string().min(3, "Title is required"),
   date: z.string().min(1, "Date is required"), // will store as ISO but display formatted
-  thumbnail: z.url("Thumbnail must be a valid URL"),
   brief: z.string().min(10, "Brief description is required"),
   content: z.string().min(20, "Content must be at least 20 characters"),
   media: z

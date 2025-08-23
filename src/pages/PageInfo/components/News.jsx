@@ -55,8 +55,7 @@ const News = () => {
     defaultValues: {
       title: "",
       brief: "",
-      content: "",
-      thumbnail: "",
+      content: "",    
       date: "",
       media: []
     }
@@ -65,30 +64,44 @@ const News = () => {
   const contentValue = watch("content");
 
   const onSubmit = (data) => {
-    const formattedData = {
-      ...data,
-      media: mediaFiles
-    };
 
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("date", data.date);
+    formData.append("brief", data.brief);
+    formData.append("content", data.content);
+
+    mediaFiles.forEach((mediaItem) => {
+      if(mediaItem.file){
+         formData.append("media", mediaItem.file); 
+      }
+    });
+
+    
+for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+    }
     if (editingId) {
-      editNews(editingId, formattedData);
-    } else {
-      postNews(formattedData);
+      formData.append('media', JSON.stringify(mediaFiles))      
+        editNews(editingId, formData);
+    } else {    
+        postNews(formData);
     }
 
     reset();
     setEditingId(null);
     setMediaFiles([]);
-  };
+};
 
   const handleEdit = (item) => {
+
     setEditingId(item._id);
     setValue("title", item.title);
     setValue("brief", item.brief);
     setValue("content", item.content);
-    setValue("thumbnail", item.thumbnail);
     setValue("date", new Date(item.date).toISOString().split("T")[0]);
-    setMediaFiles(item.media || []);
+    setMediaFiles(item?.media || []);
+     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = (id) => {
@@ -99,12 +112,19 @@ const News = () => {
     const file = event.target.files[0];
     if (!file) return;
 
-    const url = URL.createObjectURL(file);
+ 
+    const previewUrl = URL.createObjectURL(file);   
+
     setMediaFiles((prev) => [
       ...prev,
-      { type, url, thumbnail: type === "video" ? "" : url }
+      {
+        file: file, 
+        type,
+        previewUrl, 
+        thumbnail: type === "video" ? "" : previewUrl
+      }
     ]);
-  };
+};
 
   useEffect(() => {
     let result = [...news];
@@ -199,20 +219,6 @@ const News = () => {
           )}
         </div>
 
-        {/* Thumbnail */}
-        <div>
-          <label className="block font-medium mb-1">Thumbnail URL</label>
-          <input
-            type="text"
-            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter thumbnail URL"
-            {...register("thumbnail")}
-          />
-          {errors.thumbnail && (
-            <p className="text-red-500 text-sm mt-1">{errors.thumbnail.message}</p>
-          )}
-        </div>
-
         {/* Date */}
         <div>
           <label className="block font-medium mb-1">Date</label>
@@ -250,30 +256,44 @@ const News = () => {
               />
             </label>
           </div>
-
-          <div className="flex flex-wrap gap-2">
-            {mediaFiles.map((m, i) => (
-              <div key={i} className="relative w-24 h-20 border rounded overflow-hidden">
+              {/* Media Preview */}
+             <div className="flex flex-wrap gap-2">
+        {mediaFiles.map((m, i) => (
+            <div key={i} className="relative w-24 h-20 border rounded overflow-hidden">
+                {/* Show existing or new media */}
                 {m.type === "image" ? (
-                  <img
-                    src={m.url}
-                    alt="media preview"
-                    className="w-full h-full object-cover"
-                  />
+                    <img
+                        src={m.thumbnail} // This works for both new (blob URL) and existing (server URL)
+                        alt="media preview"
+                        className="w-full h-full object-cover"
+                    />
                 ) : (
-                  <video src={m.url} className="w-full h-full object-cover" />
+                    <video 
+                        src={m.previewUrl || m.url}
+                        className="w-full h-full object-cover" 
+                    />
                 )}
+                
+                {/* Show indicator for existing vs new files */}
+                {m.isExisting && (
+                    <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                        Existing
+                    </div>
+                )}
+                
                 <button
-                  onClick={() => setMediaFiles(mediaFiles.filter((_, idx) => idx !== i))}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                    onClick={() => setMediaFiles(mediaFiles.filter((_, idx) => idx !== i))}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                    title={m.isExisting ? "Remove existing media" : "Remove new media"}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
                 </button>
-              </div>
-            ))}
-          </div>
+            </div>
+        ))}
+    </div>
+
         </div>
 
         {/* Submit Button */}
@@ -281,7 +301,8 @@ const News = () => {
           {editingId && (
             <button
               onClick={() => {
-                reset();
+                reset(); 
+                setValue("content", " ")              
                 setEditingId(null);
                 setMediaFiles([]);
               }}
@@ -347,7 +368,7 @@ const News = () => {
                 {/* Thumbnail */}
                 <div className="md:w-1/3 relative">
                   <img
-                    src={news.thumbnail}
+                    src={news.media[0]?.thumbnail}
                     alt={news.title}
                     className="w-full h-48 md:h-full object-cover"
                   />
