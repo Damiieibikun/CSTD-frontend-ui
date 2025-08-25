@@ -803,7 +803,6 @@ const deleteMultiple = async (ids) => {
 }
 
 
-
 // FOOTER
 const getFooter = useCallback(async () => { 
     setLoading(true)
