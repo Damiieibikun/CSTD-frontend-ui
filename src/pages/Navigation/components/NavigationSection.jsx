@@ -290,7 +290,7 @@ const NavigationSection = () => {
                 {!isDeleting.open || isDeleting.id !== link._id ? (
                   <div className="flex gap-2 transition-all duration-300">
                     <button 
-                      onClick={() => { scrollToSection(); startEditLink(link._id); }} 
+                      onClick={() => {  window.scrollTo({ top: 0, behavior: 'smooth' }); startEditLink(link._id); }} 
                       className="p-2 text-indigo-600 hover:text-indigo-800 transition-colors"
                       title="Edit"
                     >

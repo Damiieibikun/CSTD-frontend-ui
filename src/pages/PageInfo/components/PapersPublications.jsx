@@ -51,6 +51,7 @@ const PapersPublications = () => {
   };
 
   const handleEdit = (pub) => {
+     window.scrollTo({ top: 0, behavior: 'smooth' });
     setEditingId(pub._id);
     setValue('title', pub.title);
     setValue('summary', pub.summary);

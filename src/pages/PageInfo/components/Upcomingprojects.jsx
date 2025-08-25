@@ -90,7 +90,7 @@ const Upcomingprojects = () => {
 
   
   const handleEdit = (project) => {
-  
+   window.scrollTo({ top: 0, behavior: 'smooth' });
     setShowProject(true)    
     setEditing(true)
     setValue('id', project._id);

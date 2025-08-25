@@ -180,6 +180,7 @@ const Events = () => {
   };
 
   const handleEdit = (item) => {
+     window.scrollTo({ top: 0, behavior: 'smooth' });
     setEditingId(item._id);
     setValue("title", item.title);
     setValue("description", item.description);

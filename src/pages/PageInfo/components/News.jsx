@@ -90,7 +90,7 @@ const News = () => {
 };
 
   const handleEdit = (item) => {
-
+ window.scrollTo({ top: 0, behavior: 'smooth' });
     setEditingId(item._id);
     setValue("title", item.title);
     setValue("brief", item.brief);

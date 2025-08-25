@@ -92,6 +92,7 @@ const Pastprojects = () => {
   
   const handleEdit = (project) => { 
     // Implement your edit logic here
+     window.scrollTo({ top: 0, behavior: 'smooth' });
     setShowProject(true)    
     setEditing(true)
     setValue('id', project._id);
