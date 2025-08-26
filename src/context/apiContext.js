@@ -388,7 +388,8 @@ const getProjects = useCallback(async (cat) => {
 
 const submitUpcomingProjects =async(data)=>{  
       setLoading(true)
-      const{id} = data
+      const id = data.get('id')
+ 
       let response;
   try {
     if(id){
@@ -419,7 +420,7 @@ const submitUpcomingProjects =async(data)=>{
 
 const submitPastProjects =async(data)=>{  
       setLoading(true)
-      const{id} = data
+      const id = data.get('id')
       let response;
   try {
     if(id){
