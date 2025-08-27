@@ -105,15 +105,85 @@ const Page = ({pageId, pageName}) => {
     setAddSectionModal(false);
   };
 
+
+  const addSectionContent = () => {
+  const formData = new FormData();
+  const content = {};
+
+  // Check if sections exist and have data
+  if (!sections || Object.keys(sections).length === 0) {
+   
+    return;
+  }
+
+  Object.entries(sections).forEach(([sectionKey, sectionData]) => {   
+
+    // Get original images from page data (these have public_id from Cloudinary)
+    const originalImages = page?.content?.[sectionKey]?.images || [];
+    
+    // Separate existing images (from database) and new images (from file input)
+    const currentExistingImages = sectionData.images?.filter(img => img.url && !img.file && img.public_id) || [];
+    const newImages = sectionData.images?.filter(img => img.file) || [];
+
+    // Find deleted images by comparing original with current
+    const currentImageUrls = currentExistingImages.map(img => img.url);
+    const deletedImages = originalImages.filter(img => !currentImageUrls.includes(img.url));
+    
+    
+    // Copy text fields and image management info
+    content[sectionKey] = {
+      title: sectionData.title || '',
+      details: sectionData.details || '',
+      // Helper fields for backend to understand image management
+      keepExistingImages: currentExistingImages.length > 0,
+      existingImages: currentExistingImages.map(img => img.url),
+      // Send deleted images info so backend can remove them from Cloudinary
+      deletedImages: deletedImages.map(img => ({
+        url: img.url,
+        public_id: img.public_id
+      }))
+    };
+
+    // Handle new image files
+    if (newImages.length > 0) {      
+      newImages.forEach((imgObj, index) => {
+        if (imgObj.file) {        
+          formData.append(`${sectionKey}_images`, imgObj.file);
+        }
+      });
+    } 
+  });
+
+  // Append content JSON
+  const contentJSON = JSON.stringify(content);
+  formData.append("content", contentJSON);
+  updateCurrentPage(pageId, formData);
+};
+
   useEffect(() => {
     getCurrentPage(pageId);
   }, [getCurrentPage, pageId]);
 
   useEffect(() => {
-    if (page && page?.content) {
-      setSections(page.content);
-    }
-  }, [page]);
+  if (page && page?.content) {
+    // Ensure database images have the proper structure for deletion tracking
+    const processedContent = {};
+    
+    Object.entries(page.content).forEach(([sectionKey, sectionData]) => {
+      processedContent[sectionKey] = {
+        ...sectionData,
+        images: sectionData.images?.map(img => ({
+          ...img,
+          // Ensure we have both url and public_id for proper tracking
+          url: img.url,
+          public_id: img.public_id
+        })) || []
+      };
+    });
+    
+    setSections(processedContent);
+  }
+}, [page]);
 
   return (
     <div className="w-[95%] mx-auto">
@@ -126,7 +196,9 @@ const Page = ({pageId, pageName}) => {
             </p>
           </div>
 
-          {Object.entries(sections || {}).map(([sectionName, sectionData]) => (
+          {Object.entries(sections || {}).map(([sectionName, sectionData]) =>
+          
+          (
             <SectionCard
               key={sectionName}
               title={sectionName}
@@ -162,10 +234,12 @@ const Page = ({pageId, pageName}) => {
                   {/* Image previews */}
                   {Array.isArray(sectionData.images) && sectionData.images.length > 0 && (
                     <div className="flex flex-wrap gap-3 mb-3">
-                      {sectionData.images.map((img, idx) => (
+                      {sectionData.images.map((img, idx) => 
+                      
+                      (
                         <div key={idx} className="relative w-24 h-24">
                           <img
-                            src={img.preview || img}
+                            src={img.url || img.preview}
                             alt={`Preview ${idx}`}
                             className="w-full h-full object-cover rounded border"
                           />
@@ -177,7 +251,10 @@ const Page = ({pageId, pageName}) => {
                             ×
                           </button>
                         </div>
-                      ))}
+                      )
+                      
+                      
+                      )}
                     </div>
                   )}
 
@@ -194,6 +271,15 @@ const Page = ({pageId, pageName}) => {
                       onChange={(e) => handleImageChange(sectionName, e.target.files)}
                     />
                     <Button
+                        onclick={addSectionContent}
+                        // onclick={() => updateCurrentPage(pageId, {content: sections})}
+                        reactIcon={<GrDocumentUpdate />}
+                        caption={'Update Page Section'}
+                        type={'button'}
+                         captionStyles={'hidden lg:flex'}
+                        styles={'bg-green-700 text-white'}
+                      />
+                    <Button
                     reactIcon={<GrFormTrash size={25} />}
                       type={'button'}
                       caption={'Delete Section'}
@@ -201,19 +287,13 @@ const Page = ({pageId, pageName}) => {
                       captionStyles={'hidden lg:flex'}
                       onclick={() => setdeleteSectionModal({open: true, id: pageId, sectionName: sectionName})}
                     />
-                     <Button
-                        onclick={() => updateCurrentPage(pageId, {content: sections})}
-                        reactIcon={<GrDocumentUpdate />}
-                        caption={'Update Page Section'}
-                        type={'button'}
-                         captionStyles={'hidden lg:flex'}
-                        styles={'bg-green-700 text-white'}
-                      />
+                     
                   </div>
                 </div>
               )}
             </SectionCard>
-          ))}
+          )
+          )}
         </div>
 
         <div className='flex gap-3 justify-self-end'>

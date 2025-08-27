@@ -324,28 +324,67 @@ const getCurrentPage = useCallback(async (page) => {
 }, [BASEURL]); 
 
 
-const updateCurrentPage = async (page, data) => {
-    setLoading(true)
-    try {
-        const response = await axios.put(`${BASEURL}/pages/updatepage/${page}`, data)
-        if(response.data.success){
-            setPage(response.data.data)
-            setLoading(false)
-            getCurrentPage(page)
-             setPageResponse({
-            success: response.data.success,
-            message: response.data.message
-        })
-        }
-    } catch (err) {
-        console.log(err)
-        setLoading(false)
-        setPageResponse({
-            success: err.response.data.success,
-            message: err.response.data.message
-        })
+const updateCurrentPage = async (pageId, formDataOrObject) => {
+  try {
+    setLoading(true);    
+    let requestData;
+    let config = {};
+
+    if (formDataOrObject instanceof FormData) {
+      // If it's FormData, use it directly
+      requestData = formDataOrObject;
+           
+      // Don't set Content-Type - let axios/browser handle it
+      config = {
+        headers: {
+          // Do not set Content-Type for FormData
+        },
+      };
+    } else {
+      // If it's a regular object, send as JSON
+      requestData = formDataOrObject;
+      config = {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
     }
-}
+
+    const response = await axios.put(
+      `${BASEURL}/pages/updatepage/${pageId}`,
+      requestData,
+      config
+    );
+
+    if (response.data.success) {
+      setPageResponse({
+        success: true,
+        message: response.data.message
+      });
+      
+      // Refresh the page data
+      await getCurrentPage(pageId);
+    } else {
+      setPageResponse({
+        success: false,
+        message: response.data.message || 'Failed to update page'
+      });
+    }
+
+    setLoading(false);
+  } catch (error) {   
+    const errorMessage = error.response?.data?.message || 
+                        error.message || 
+                        'Failed to update page';
+    
+    setPageResponse({
+      success: false,
+      message: errorMessage
+    });
+    
+    setLoading(false);
+  }
+};
 
 const deleteCurrentPageSection = async (page, data) => {
     setLoading(true)

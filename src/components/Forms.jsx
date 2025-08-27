@@ -22,7 +22,7 @@ const Forms = ({
   return (
     <form onSubmit={submitForm} className={`${formWidth} flex flex-col mx-auto`}>
       <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl w-full">
-        <div className="max-w-lg mx-auto">         
+        <div className="mx-auto max-w-5xl">         
           <div>
             {api?.message && (
               <div

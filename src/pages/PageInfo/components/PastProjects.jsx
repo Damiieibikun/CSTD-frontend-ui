@@ -156,7 +156,7 @@ const Pastprojects = () => {
   };
 
   const pastProjectDetails = { 
-    formWidth: 'md:w-[90%]',
+    formWidth: 'md:w-[80%]',
     title: `${editing ? 'Edit Project': 'Add Project'}`,
     inputsInfo: [
       {
