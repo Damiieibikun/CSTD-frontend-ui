@@ -25,7 +25,7 @@ const FooterSection = () => {
     setFooterData({
       ...footerData,
       socialLinks: [
-        ...footerData.socialLinks,
+        ...footerData?.socialLinks,
         {
           id: Date.now(),
           platform: newSocial.platform,
@@ -43,7 +43,7 @@ const FooterSection = () => {
     setFooterData({
       ...footerData,
       columns: [
-        ...footerData.columns,
+        ...footerData?.columns,
         {
           id: Date.now(),
           title: newColumn.title,
@@ -151,10 +151,10 @@ const FooterSection = () => {
           <h3 className="font-medium text-gray-900 mb-3 md:mb-4 transition-all">Website Logo</h3>
           
           <div className="flex flex-col items-center transition-all">
-            {footerData.logo ? (
+            {footerData?.logo ? (
               <div className="relative transition-all">
                 <img 
-                  src={footerData.logo} 
+                  src={footerData?.logo} 
                   alt="Website logo" 
                   className="h-24 md:h-32 object-contain transition-all"
                 />
@@ -191,7 +191,7 @@ const FooterSection = () => {
               Footer Description
             </label>
             <textarea
-              value={footerData.description}
+              value={footerData?.description}
               onChange={(e) => updateText('description', e.target.value)}
               className="w-full px-3 py-2 text-xs md:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[80px] md:min-h-[100px] transition-all"
             />
@@ -203,7 +203,7 @@ const FooterSection = () => {
             </label>
             <input
               type="text"
-              value={footerData.copyright}
+              value={footerData?.copyright}
               onChange={(e) => updateText('copyright', e.target.value)}
               className="w-full px-3 py-2 text-xs md:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
             />
@@ -211,7 +211,7 @@ const FooterSection = () => {
 
           <div className="flex justify-end">
             <button
-              onClick={() => updateFooter(footerData._id, footerData)}
+              onClick={() => updateFooter(footerData?._id, footerData)}
               className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-xs md:text-sm transition-all duration-300"
             >
               <FaSave className="w-4 h-4 md:w-5 md:h-5 transition-all"/>
@@ -328,7 +328,7 @@ const FooterSection = () => {
   {/* Save Button */}
   <div className="mt-6 flex justify-end">
     <button
-      onClick={() => updateFooter(footerData._id, footerData)}
+      onClick={() => updateFooter(footerData?._id, footerData)}
       className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg shadow-sm transition-all duration-300 flex items-center"
     >
       <FaSave className="mr-2 w-4 h-4" />
@@ -425,7 +425,7 @@ const FooterSection = () => {
         <div className="flex justify-center mt-3 md:mt-4">
           <button
             className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-xs md:text-sm transition-all duration-300"
-            onClick={() => updateFooter(footerData._id, footerData)}
+            onClick={() => updateFooter(footerData?._id, footerData)}
           >
             <FaSave className="w-4 h-4 md:w-5 md:h-5 transition-all"/>
             Save Social links
@@ -444,9 +444,9 @@ const FooterSection = () => {
                 {/* Logo and Description */}
                 <div className="sm:col-span-2 lg:col-span-1 transition-all">
                   <div className="mb-3 md:mb-4 transition-all">
-                    {footerData.logo ? (
+                    {footerData?.logo ? (
                       <img 
-                        src={footerData.logo} 
+                        src={footerData?.logo} 
                         alt="Logo" 
                         className="h-10 md:h-12 object-contain transition-all"
                       />
@@ -457,7 +457,7 @@ const FooterSection = () => {
                     )}
                   </div>
                   <p className="text-gray-400 text-xs md:text-sm transition-all">
-                    {footerData.description}
+                    {footerData?.description}
                   </p>
                 </div>
                 
@@ -484,7 +484,7 @@ const FooterSection = () => {
               {/* Social Links */}
               <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center transition-all">
                 <div className="text-gray-500 text-xs md:text-sm transition-all">
-                  {footerData.copyright}
+                  {footerData?.copyright}
                 </div>
                 
                 <div className="flex gap-2 md:gap-3 mt-3 md:mt-0 transition-all">
