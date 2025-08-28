@@ -83,8 +83,7 @@ const changePasswordSchema = z
 // Pages schema
 const childLinkSchema = z.object({
   pageName: z.string().min(1, "Page name is required"),
-  path: z.string().min(1, "Path is required")
-    .regex(/^\/[a-zA-Z0-9\-\/#]*$/, "Path must start with '/'"),
+  path: z.string().min(1, "Path is required").regex(/^\/[a-zA-Z0-9\-\/#]*$/, "Path must start with '/'"),
   icon: z.string().optional().transform(val => val?.trim() || "fa:FaRegFile")
     .refine(val => /^fa:[A-Za-z0-9]+$/.test(val), "Icon must follow format 'fa:FaIconName'"),
 });
@@ -113,7 +112,7 @@ const newsSchema = z.object({
         thumbnail: z.string().optional()
       })
     )
-    .optional()
+    .nonempty("At least one media file is required")
 });
 
 // Events

@@ -80,13 +80,22 @@ const Page = ({pageId, pageName}) => {
 
   // Add section names
   const addSectionName = () => {
-    if (!sectionName.value.trim()) {
-      setSectionName(prev => ({
-        ...prev,
-        error: '*Section name cannot be empty'
-      }));
-      return;
-    }
+      if (!sectionName.value.trim()) {
+    setSectionName(prev => ({
+      ...prev,
+      error: '*Section name cannot be empty'
+    }));
+    return;
+  }
+
+  // Check if section name contains spaces
+  if (sectionName.value.includes(' ')) {
+    setSectionName(prev => ({
+      ...prev,
+      error: '*Section name cannot contain spaces. Use (e.g., HeroSection)'
+    }));
+    return;
+  }
 
     const sectionObject = {
       content : {
@@ -192,106 +201,115 @@ const Page = ({pageId, pageName}) => {
           <div className="text-center mb-10">
             <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl capitalize">{pageName} CMS</h1>
             <p className="mt-3 text-lg text-gray-600">
-              Manage your {pageId} content here
+              Manage your <span className='capitalize'>{pageId}</span>  content here
             </p>
           </div>
 
           {Object.entries(sections || {}).map(([sectionName, sectionData]) =>
           
-          (
+          (            
             <SectionCard
-              key={sectionName}
-              title={sectionName}
-              isOpen={activeSection.name === sectionName}
-              onClick={() => toggleSection(sectionName)}
-            >
-              {!sections || Object.keys(sections).length === 0 || loading ? (
-                <SmallLoader size="h-10 w-10" />
-              ) : (
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  {/* Render fields */}
-                  {Object.entries(sectionData).map(([fieldName, value]) => (
-                    <div key={fieldName} className="mb-3">
-                      <strong className="block text-sm text-gray-600 capitalize">{fieldName}:</strong>
+  key={sectionName}
+  title={sectionName}
+  isOpen={activeSection.name === sectionName}
+  onClick={() => toggleSection(sectionName)}
+>
+  {!sections || Object.keys(sections).length === 0 || loading ? (
+    <div className="flex justify-center items-center py-10">
+      <SmallLoader size="h-10 w-10" />
+    </div>
+  ) : (
+    <div className="p-6 bg-gray-50 rounded-lg border border-gray-200">
+      {/* Render fields */}
+      {Object.entries(sectionData).map(([fieldName, value]) => (
+       fieldName !== 'images' && <div key={fieldName} className="mb-5 p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
+          <strong className="block text-sm font-medium text-gray-700 capitalize mb-2">{fieldName}:</strong>
 
-                      {Array.isArray(value) && fieldName !== 'images' ? (
-                        <ul className="list-disc list-inside text-sm text-gray-700">
-                          {value.map((item, idx) => (
-                            <li key={idx}>{item}</li>
-                          ))}
-                        </ul>
-                      ) : typeof value === 'string' && value.startsWith('<') ? (
-                        <div
-                          className="prose text-sm"
-                          dangerouslySetInnerHTML={{ __html: value }}
-                        />
-                      ) : fieldName !== 'images' ? (
-                        <p className="text-sm text-gray-700">{value}</p>
-                      ) : null}
-                    </div>
-                  ))}
+          {Array.isArray(value) && fieldName !== 'images' ? (
+            <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+              {value.map((item, idx) => (
+                <li key={idx} className="py-1">{item}</li>
+              ))}
+            </ul>
+          ) : typeof value === 'string' && value.startsWith('<') ? (
+            <div
+              className="prose prose-sm max-w-none border-l-4 border-blue-100 pl-6 py-1"
+              dangerouslySetInnerHTML={{ __html: value }}
+            />
+          ) : fieldName !== 'images' ? (
+            <p className="text-sm text-gray-700 py-1">{value}</p>
+          ) : null}
+        </div>
+      ))}
 
-                  {/* Image previews */}
-                  {Array.isArray(sectionData.images) && sectionData.images.length > 0 && (
-                    <div className="flex flex-wrap gap-3 mb-3">
-                      {sectionData.images.map((img, idx) => 
-                      
-                      (
-                        <div key={idx} className="relative w-24 h-24">
-                          <img
-                            src={img.url || img.preview}
-                            alt={`Preview ${idx}`}
-                            className="w-full h-full object-cover rounded border"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteImage(sectionName, idx)}
-                            className="absolute top-0 right-0 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      )
-                      
-                      
-                      )}
-                    </div>
-                  )}
-
-                  {/* Buttons */}
-                  <div className="flex space-x-3 mt-4">
-                    <TextEditorButton
-                      onClick={() => {
-                        setOpenModal(true);
-                        setActiveModalSection(sectionName);
-                      }}
-                    />
-                    <ImageUploadButton
-                      multiple
-                      onChange={(e) => handleImageChange(sectionName, e.target.files)}
-                    />
-                    <Button
-                        onclick={addSectionContent}
-                        // onclick={() => updateCurrentPage(pageId, {content: sections})}
-                        reactIcon={<GrDocumentUpdate />}
-                        caption={'Update Page Section'}
-                        type={'button'}
-                         captionStyles={'hidden lg:flex'}
-                        styles={'bg-green-700 text-white'}
-                      />
-                    <Button
-                    reactIcon={<GrFormTrash size={25} />}
-                      type={'button'}
-                      caption={'Delete Section'}
-                      styles={'text-white bg-red-600'}
-                      captionStyles={'hidden lg:flex'}
-                      onclick={() => setdeleteSectionModal({open: true, id: pageId, sectionName: sectionName})}
-                    />
-                     
-                  </div>
+      {/* Image previews */}
+      {Array.isArray(sectionData.images) && sectionData.images.length > 0 && (
+        <div className="mb-5 p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
+          <strong className="block text-sm font-medium text-gray-700 capitalize mb-3">Images:</strong>
+          <div className="flex flex-wrap gap-3">
+            {sectionData.images.map((img, idx) => (
+              <div key={idx} className="relative group">
+                <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-gray-200 group-hover:border-blue-300 transition-colors">
+                  <img
+                    src={img.url || img.preview}
+                    alt={`Preview ${idx}`}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-              )}
-            </SectionCard>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteImage(sectionName, idx)}
+                  className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Buttons */}
+      <div className="flex flex-wrap gap-3 mt-6 p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
+        <TextEditorButton
+          onClick={() => {
+            setOpenModal(true);
+            setActiveModalSection(sectionName);
+          }}
+          className="flex-1 min-w-[150px]"
+        />
+        <ImageUploadButton
+          multiple
+          onChange={(e) => handleImageChange(sectionName, e.target.files)}
+          className="flex-1 min-w-[150px]"
+        />
+        <Button
+          onclick={addSectionContent}
+          reactIcon={<GrDocumentUpdate size={20}/>}
+          caption={'Update Section'}
+          type={'button'}
+          captionStyles={'hidden lg:flex'}
+          styles={`flex items-center justify-center px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 
+      text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-300 
+      shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none 
+      focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 active:translate-y-0`}
+          // styles={'bg-green-600 hover:bg-green-700 text-white flex-1 min-w-[150px]'}
+        />
+        <Button
+          reactIcon={<GrFormTrash size={25} />}
+          type={'button'}
+          caption={'Delete Section'}
+          styles={`flex items-center justify-center px-5 py-3 bg-gradient-to-r from-orange-600 to-red-600 
+      text-white rounded-lg hover:from-orange-700 hover:to-red-700 transition-all duration-300 
+      shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none 
+      focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 active:translate-y-0`}
+          captionStyles={'hidden lg:flex'}
+          onclick={() => setdeleteSectionModal({open: true, id: pageId, sectionName: sectionName})}
+        />
+      </div>
+    </div>
+  )}
+</SectionCard>
           )
           )}
         </div>

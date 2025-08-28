@@ -109,17 +109,28 @@ const News = () => {
     if (!file) return;
 
  
-    const previewUrl = URL.createObjectURL(file);   
-
-    setMediaFiles((prev) => [
-      ...prev,
-      {
-        file: file, 
-        type,
-        previewUrl, 
-        thumbnail: type === "video" ? "" : previewUrl
-      }
-    ]);
+    const previewUrl = URL.createObjectURL(file);  
+    
+      const newMedia = {
+    file,
+    type,
+    previewUrl,
+    thumbnail: type === "video" ? "" : previewUrl
+  };
+      setMediaFiles((prev) => {
+    const updated = [...prev, newMedia];
+    // 👇 sync with react-hook-form so Zod validation passes
+    setValue(
+      "media",
+      updated.map((m) => ({
+        type: m.type,
+        url: m.previewUrl || m.url || "",
+        thumbnail: m.thumbnail
+      })),
+      { shouldValidate: true }
+    );
+    return updated;
+  });
 };
 
   useEffect(() => {
@@ -231,6 +242,9 @@ const News = () => {
 
         {/* Media Upload */}
         <div>
+          {errors.media && (
+            <p className="text-red-500 text-sm mt-1">{errors.media.message}</p>
+          )}
           <label className="block font-medium mb-1">Upload Media</label>
           <div className="flex flex-col sm:flex-row gap-4 mb-2">
             <label className="flex-1 cursor-pointer border rounded p-2 text-center hover:bg-gray-50 transition-colors">
@@ -278,14 +292,28 @@ const News = () => {
                 )}
                 
                 <button
-                    onClick={() => setMediaFiles(mediaFiles.filter((_, idx) => idx !== i))}
+                    onClick={() => {
+                        const updated = mediaFiles.filter((_, idx) => idx !== i);
+                        setMediaFiles(updated);
+                        setValue(
+                          "media",
+                          updated.map((m) => ({
+                            type: m.type,
+                            url: m.previewUrl || m.url || "",
+                            thumbnail: m.thumbnail
+                          })),
+                          { shouldValidate: true }
+                        );
+                      }}
+                                        
+                    
                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
                     title={m.isExisting ? "Remove existing media" : "Remove new media"}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                     </svg>
-                </button>
+                </button>                
             </div>
         ))}
     </div>

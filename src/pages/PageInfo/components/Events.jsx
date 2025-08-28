@@ -127,40 +127,32 @@ const Events = () => {
   const onSubmit = async (data) => {
     try {
       // Handle file upload if a file is selected
+      const formData = new FormData();
+      formData.append('title', data.title);
+      formData.append('description', data.description);
+      formData.append('date', data.date);
+      formData.append('time', data.time);
+      formData.append('location', data.location);
+
       if (selectedFile) {
         setUploadProgress(25);
+       
+        formData.append('flyer', selectedFile);
+        setUploadProgress(75);       
         
-        // Option 1: Convert to base64 (for storing directly in database)
-        const base64String = await convertFileToBase64(selectedFile);
-        data.flyer = base64String;
-        
-        setUploadProgress(75);
-        
-        // Option 2: If you have a separate file upload endpoint
-        // const formData = new FormData();
-        // formData.append('flyer', selectedFile);
-        // formData.append('eventId', editingId || 'new');
-        // 
-        // const uploadResponse = await fetch('/api/upload/flyer', {
-        //   method: 'POST',
-        //   body: formData
-        // });
-        // 
-        // if (!uploadResponse.ok) {
-        //   throw new Error('Failed to upload file');
-        // }
-        // 
-        // const { url } = await uploadResponse.json();
-        // data.flyer = url;
       }
 
       setUploadProgress(90);
 
       // Submit the event data
       if (editingId) {
-        await editEvent(editingId, data);
+        
+        await editEvent(editingId, formData);
+        
       } else {
-        await postEvent(data);
+         
+        await postEvent(formData);
+        
       }
 
       setUploadProgress(100);
