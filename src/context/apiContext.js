@@ -860,8 +860,30 @@ const getFooter = useCallback(async () => {
 }, [BASEURL]);
 
 const updateFooter = async (id, data) => {
+  setLoading(true)
     try {
     const response = await axios.put(`${BASEURL}/footer/updatefooter/${id}`, data);
+    if(response.data.success){
+        setLoading(false)
+        setFooterData(response.data.data)
+         setPageResponse({
+            success: response.data.success,
+            message: response.data.message
+        })
+    }
+    } catch (err) {
+        console.error(err);
+        setLoading(false)
+        setPageResponse({
+            success: err.response.data.success,
+            message: err.response.data.message
+        })
+    }
+}
+const newFooter = async (data) => {
+  setLoading(true)
+    try {
+    const response = await axios.post(`${BASEURL}/footer/addfooter`, data);
     if(response.data.success){
         setLoading(false)
         setFooterData(response.data.data)
@@ -983,6 +1005,7 @@ const values = {
         footerData, 
         setFooterData,
         updateFooter,
+        newFooter,
     }
    return(
     <ApiContext.Provider value={values}>

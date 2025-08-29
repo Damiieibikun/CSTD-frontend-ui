@@ -246,6 +246,7 @@ const News = () => {
             <p className="text-red-500 text-sm mt-1">{errors.media.message}</p>
           )}
           <label className="block font-medium mb-1">Upload Media</label>
+          <p className="m-0 text-gray-400 text-xs mb-6">Supports: PNG, JPG, GIF, WebP MP4• Max size: 5MB</p>
           <div className="flex flex-col sm:flex-row gap-4 mb-2">
             <label className="flex-1 cursor-pointer border rounded p-2 text-center hover:bg-gray-50 transition-colors">
               <span className="block mb-1">Upload Image</span>

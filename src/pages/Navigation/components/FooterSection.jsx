@@ -4,9 +4,10 @@ import { ApiContext } from '../../../context/apiContext';
 import { Loader } from '../../../components/Loader';
 
 const FooterSection = () => {
-  const { getFooter, updateFooter, footerData, setFooterData, loading } = useContext(ApiContext);
+  const { getFooter, updateFooter, newFooter, footerData, setFooterData, loading } = useContext(ApiContext);
   const [newSocial, setNewSocial] = useState({ platform: '', url: '' });
   const [newColumn, setNewColumn] = useState({ title: '', links: [] });
+  const [imageFile, setImageFile] = useState(null)
   
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
@@ -16,6 +17,7 @@ const FooterSection = () => {
         setFooterData({ ...footerData, logo: event.target.result });
       };
       reader.readAsDataURL(file);
+      setImageFile(file)
     }
   };
   
@@ -132,6 +134,21 @@ const FooterSection = () => {
     });
   };
 
+
+  // Update footer
+  const updateFooterData = (id, data)=>{
+    const formData = new FormData()   
+    if(imageFile){
+      formData.append('logo', imageFile)
+    }
+    formData.append("data", JSON.stringify(data));
+   if(id){
+    updateFooter(id, formData)  
+      }
+      else{
+        newFooter(formData)
+      }    
+  }
   useEffect(() => {
     getFooter();
   }, [getFooter]);
@@ -148,7 +165,12 @@ const FooterSection = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 transition-all">
         {/* Logo Section */}
         <div className="bg-gray-50 rounded-lg md:rounded-xl p-4 md:p-6 transition-all duration-300 hover:shadow-sm">
-          <h3 className="font-medium text-gray-900 mb-3 md:mb-4 transition-all">Website Logo</h3>
+          <div>
+             <h3 className="font-medium text-gray-900 mb-3 md:mb-4 transition-all">Website Logo</h3>
+              <p className="m-0 text-gray-400 text-xs mb-6">Supports: PNG, JPG, GIF, WebP • Max size: 5MB</p>
+              
+          </div>
+         
           
           <div className="flex flex-col items-center transition-all">
             {footerData?.logo ? (
@@ -210,13 +232,14 @@ const FooterSection = () => {
           </div>
 
           <div className="flex justify-end">
-            <button
-              onClick={() => updateFooter(footerData?._id, footerData)}
+           {footerData?.logo && (footerData?.description || footerData?.copyright) && <button
+              onClick={() => updateFooterData(footerData?._id, footerData)}
+             
               className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-xs md:text-sm transition-all duration-300"
             >
               <FaSave className="w-4 h-4 md:w-5 md:h-5 transition-all"/>
               Save changes
-            </button>
+            </button>}
           </div>
         </div>
       </div>
@@ -327,13 +350,13 @@ const FooterSection = () => {
   
   {/* Save Button */}
   <div className="mt-6 flex justify-end">
-    <button
-      onClick={() => updateFooter(footerData?._id, footerData)}
+    {footerData?.columns && footerData?.columns.length > 0 && <button
+      onClick={() => updateFooterData(footerData?._id, footerData)}      
       className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg shadow-sm transition-all duration-300 flex items-center"
     >
       <FaSave className="mr-2 w-4 h-4" />
       Save Columns
-    </button>
+    </button>}
   </div>
 </div>
       
@@ -423,13 +446,13 @@ const FooterSection = () => {
         </div>
         
         <div className="flex justify-center mt-3 md:mt-4">
-          <button
+          {footerData?.socialLinks && footerData?.socialLinks.length > 0 && <button
             className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg text-xs md:text-sm transition-all duration-300"
-            onClick={() => updateFooter(footerData?._id, footerData)}
+            onClick={() => updateFooterData(footerData?._id, footerData)}           
           >
             <FaSave className="w-4 h-4 md:w-5 md:h-5 transition-all"/>
             Save Social links
-          </button>
+          </button>}
         </div>
       </div>
       

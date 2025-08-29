@@ -172,7 +172,7 @@ const Pastprojects = () => {
         type: 'file',
         accept: 'image/*',
         placeholder: 'Project Image',
-        label: 'Project Image:',
+        label: 'Project Image: PNG, JPG, GIF, WebP • Max size: 5MB',
         registerFunction: register,         
         errorMessage: errors.image
       }

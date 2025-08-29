@@ -173,8 +173,8 @@ const Upcomingprojects = () => {
         title: 'image',
         type: 'file',
         accept: 'image/*',
-        placeholder: 'Project Image',
-        label: 'Project Image:',
+        placeholder: 'Project Image:',
+        label: 'Project Image: PNG, JPG, GIF, WebP • Max size: 5MB',
         registerFunction: register,         
         errorMessage: errors.image
       }

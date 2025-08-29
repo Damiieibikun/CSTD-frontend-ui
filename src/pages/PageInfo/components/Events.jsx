@@ -113,16 +113,6 @@ const Events = () => {
     setUploadProgress(0);
   };
 
-  // Convert file to base64 for storage
-  const convertFileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
   // Handle form submission with file processing
   const onSubmit = async (data) => {
     try {

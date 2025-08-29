@@ -270,6 +270,7 @@ const Page = ({pageId, pageName}) => {
       )}
 
       {/* Buttons */}
+      <p className="m-0 text-gray-400 text-xs mb-6">Supports: PNG, JPG, GIF, WebP MP4• Max size: 5MB</p>
       <div className="flex flex-wrap gap-3 mt-6 p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
         <TextEditorButton
           onClick={() => {
