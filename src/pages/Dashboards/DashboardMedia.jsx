@@ -16,6 +16,7 @@ const DashboardMedia = () => {
         ...image,
         articleTitle: newsItem.title,
         articleDate: newsItem.date,
+        articleBrief: newsItem.brief,
         createdAt: newsItem.createdAt
       }))
   ) || []
@@ -52,15 +53,15 @@ const DashboardMedia = () => {
     if (dateFilter === '7days') {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      filtered = filtered.filter(image => new Date(image.createdAt) >= sevenDaysAgo);
+      filtered = filtered.filter(image => new Date(image.articleDate) >= sevenDaysAgo);
     } else if (dateFilter === '30days') {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      filtered = filtered.filter(image => new Date(image.createdAt) >= thirtyDaysAgo);
+      filtered = filtered.filter(image => new Date(image.articleDate) >= thirtyDaysAgo);
     } else if (dateFilter === 'custom' && customDate) {
       const selectedDate = new Date(customDate);
       filtered = filtered.filter(image => {
-        const imageDate = new Date(image.createdAt);
+        const imageDate = new Date(image.articleDate);
         return imageDate.toDateString() === selectedDate.toDateString();
       });
     }
@@ -202,7 +203,8 @@ const DashboardMedia = () => {
                     {image.articleTitle}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {new Date(image.createdAt).toLocaleDateString()}
+                    {image.articleDate}
+                   
                   </p>
                 </div>
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
@@ -237,7 +239,7 @@ const DashboardMedia = () => {
       </div>
 
       {/* Recent News and Events */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8">
         {/* Recent News */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Recent News</h2>
@@ -301,15 +303,20 @@ const DashboardMedia = () => {
       {selectedImage && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setSelectedImage(null)}>
           <div className="max-w-4xl max-h-full bg-white rounded-lg overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-5">
             <img 
               src={selectedImage.url} 
               alt={`From article: ${selectedImage.articleTitle}`}
               className="max-w-full max-h-96 object-contain"
             />
+            <p className="p-2 text-sm text-gray-800">{selectedImage.articleBrief}</p>
+            </div>
+            
+           
             <div className="p-4">
               <h3 className="font-semibold text-lg first-letter:capitalize">{selectedImage.articleTitle}</h3>
-              <p className="text-sm text-gray-600">
-                Added on {new Date(selectedImage.createdAt).toLocaleDateString()}
+              <p className="text-sm text-gray-600">                
+                Date {new Date(selectedImage.articleDate).toLocaleDateString()}
               </p>
             </div>
             <button 

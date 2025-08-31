@@ -120,12 +120,7 @@ const Sidenav = ({ loggedAdmin }) => {
       case 'media':
         return [
           { pageName: 'Dashboard', icon: <FaTachometerAlt />, path: '/dashboardmedia' },
-          { 
-            section: 'mediaPages',
-            title: 'Media Pages',
-            icon: <FaFolder />,
-            items: [...navMediaLinks]
-          },
+         
           { pageName: 'News', icon: <FaRegNewspaper />, path: '/newslist'},          
           { pageName: 'Events', icon: <FaCalendarAlt />, path: '/eventslist'},        
           { pageName: 'Change Password', icon: <RiLockPasswordLine />, path: '/changepassword' }

@@ -186,17 +186,26 @@ const Events = () => {
   };
 
   const getEventStatus = (eventDate, eventTime) => {
-    const now = new Date();
-    const eventDateTime = new Date(`${eventDate} ${eventTime}`);
-    
-    if (eventDateTime < now) {
-      return 'past';
-    } else if (eventDateTime.toDateString() === now.toDateString()) {
-      return 'today';
-    } else {
-      return 'upcoming';
-    }
-  };
+  const now = new Date();
+
+  // Parse event date and time properly
+  const [hours, minutes] = eventTime.split(":");
+  const eventDateTime = new Date(eventDate);
+  eventDateTime.setHours(Number(hours), Number(minutes), 0, 0);
+
+  // Compare dates
+  const today = now.toDateString();
+  const eventDay = eventDateTime.toDateString();
+
+  if (eventDay === today) {
+    return "today";
+  } else if (eventDateTime < now) {
+    return "past";
+  } else {
+    return "upcoming";
+  }
+};
+
 
   const getStatusColor = (status) => {
     switch (status) {
