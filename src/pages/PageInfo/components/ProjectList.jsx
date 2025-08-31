@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { FaEdit, FaTrash, FaSearch, FaShieldAlt, FaCode, FaHandshake, FaBoxOpen, FaChevronDown, FaChevronUp, FaImage, FaTimes, FaExternalLinkAlt, FaCalendar, FaTag } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaSearch, FaShieldAlt, FaCode, FaHandshake, FaBoxOpen, FaChevronDown, FaChevronUp, FaImage, FaTimes, FaCalendar, FaTag } from 'react-icons/fa';
 
 const ProjectList = ({ cat, project, onEdit, onDelete }) => {
   const [isExpanded, setIsExpanded] = useState(false);

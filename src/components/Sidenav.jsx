@@ -70,10 +70,10 @@ const Sidenav = ({ loggedAdmin }) => {
 
   // Filter links based on role
   const excludedPages = ['news', 'gallery', 'events'];
-  const includedPages = ['news', 'gallery', 'events'];
+  // const includedPages = ['news', 'gallery', 'events'];
   
   const navAdminLinks = links?.filter(link => !excludedPages.includes(link.pageId));
-  const navMediaLinks = links?.filter(link => includedPages.includes(link.pageId));
+  // const navMediaLinks = links?.filter(link => includedPages.includes(link.pageId));
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
