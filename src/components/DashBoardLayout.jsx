@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { ApiContext } from '../context/apiContext';
 
 const DashboardLayout = ({ children }) => {
-  // const [currentAdmin, setCurrentAdmin] = useState(null); 
   const {currentAdmin, setCurrentAdmin} =useContext(ApiContext)
   const navigate = useNavigate();
   
