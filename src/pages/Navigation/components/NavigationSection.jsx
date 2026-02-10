@@ -41,6 +41,8 @@ const NavigationSection = () => {
   const [expandedLinks, setExpandedLinks] = useState({});
   const [currentParentId, setCurrentParentId] = useState(null);
   const [draggedIndex, setDraggedIndex] = useState(null);
+  const [isOrderDirty, setIsOrderDirty] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
   
   // Refs for delete confirmation elements
   const deleteRef = useRef(null);
@@ -95,16 +97,28 @@ const NavigationSection = () => {
       const updated = [...prevLinks];
       const [movedItem] = updated.splice(draggedIndex, 1);
       updated.splice(index, 0, movedItem);
-
-      // Persist new order if backend supports it (order is optional)
-      updated.forEach((link, orderIndex) => {
-        updatePage(link._id, { ...link, order: orderIndex });
-      });
-
+      // mark order as changed; save happens explicitly via "Save Order" button
+      setIsOrderDirty(true);
       return updated;
     });
 
     setDraggedIndex(null);
+  };
+
+  const handleSaveOrder = async () => {
+    if (!isOrderDirty || savingOrder) return;
+
+    try {
+      setSavingOrder(true);
+      // Persist the current order; optionally store an explicit "order" index
+      for (let i = 0; i < links.length; i += 1) {
+        const link = links[i];
+        await updatePage(link._id, { ...link, order: i });
+      }
+      setIsOrderDirty(false);
+    } finally {
+      setSavingOrder(false);
+    }
   };
 
   const onSubmit = (data) => {   
@@ -224,6 +238,19 @@ const NavigationSection = () => {
               Add Link
             </button>
           )}
+
+          <button
+            type="button"
+            onClick={handleSaveOrder}
+            disabled={!isOrderDirty || savingOrder}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 shadow-md ${
+              !isOrderDirty || savingOrder
+                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-0.5'
+            }`}
+          >
+            {savingOrder ? 'Saving...' : 'Save Order'}
+          </button>
         </div>
       </div>
 
