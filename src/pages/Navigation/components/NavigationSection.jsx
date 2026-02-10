@@ -1,6 +1,6 @@
 
 import { useContext, useEffect, useRef, useState } from 'react';
-import { FaPlus, FaPencilAlt, FaTrash, FaChevronDown, FaWindowClose, FaTimes } from "react-icons/fa";
+import { FaPlus, FaPencilAlt, FaTrash, FaChevronDown, FaWindowClose, FaTimes, FaBars } from "react-icons/fa";
 import { ApiContext } from '../../../context/apiContext';
 import { Loader } from '../../../components/Loader';
 import { childLinkSchema, pageSchema } from '../../../validators/formValidation';
@@ -43,6 +43,7 @@ const NavigationSection = () => {
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [isOrderDirty, setIsOrderDirty] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
+  const [isDragMode, setIsDragMode] = useState(false);
   
   // Refs for delete confirmation elements
   const deleteRef = useRef(null);
@@ -324,11 +325,11 @@ const NavigationSection = () => {
         {links.map((link, index) => (
           <div
             key={link._id}
-            draggable
-            onDragStart={() => handleDragStart(index)}
-            onDragOver={handleDragOver}
-            onDrop={() => handleDrop(index)}
-            className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300 cursor-move"
+            draggable={isDragMode}
+            onDragStart={isDragMode ? () => handleDragStart(index) : undefined}
+            onDragOver={isDragMode ? handleDragOver : undefined}
+            onDrop={isDragMode ? () => handleDrop(index) : undefined}
+            className={`border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300 ${isDragMode ? 'cursor-grab bg-amber-50' : 'cursor-default'}`}
           >
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-gray-50 p-4">
               <div className="flex items-center gap-3">
@@ -371,6 +372,19 @@ const NavigationSection = () => {
                       title="Add Child"
                     >
                       <FaPlus className="w-4 h-4" /> Add Child
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsDragMode(prev => !prev)}
+                      className={`flex items-center gap-1 text-xs px-3 py-1 rounded-lg border transition-colors duration-200 ${
+                        isDragMode
+                          ? 'bg-amber-100 border-amber-500 text-amber-700'
+                          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}
+                      title={isDragMode ? 'Drag mode on - drag cards to reorder' : 'Enable drag-and-drop reordering'}
+                    >
+                      <FaBars className="w-3 h-3" />
+                      <span className="hidden sm:inline">{isDragMode ? 'Reordering' : 'Reorder'}</span>
                     </button>
                   </div>
                 ) : (
