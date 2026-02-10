@@ -111,11 +111,26 @@ const NavigationSection = () => {
 
     try {
       setSavingOrder(true);
-      // Persist the current order; optionally store an explicit "order" index
+
+      // Persist the current order using a clean payload that matches the backend schema
       for (let i = 0; i < links.length; i += 1) {
         const link = links[i];
-        await updatePage(link._id, { ...link, order: i });
+
+        const payload = {
+          pageId: link.pageId,
+          pageName: link.pageName,
+          pageType: link.pageType,
+          icon: link.icon || "",
+          path: link.path,
+          order: i,
+          children: link.children || [],
+          content: link.content || {},
+        };
+
+        // Uses /pages/update/:id which validates against pageSchema (including order)
+        await updatePage(link._id, payload);
       }
+
       setIsOrderDirty(false);
     } finally {
       setSavingOrder(false);
