@@ -106,31 +106,36 @@ const NavigationSection = () => {
     setDraggedIndex(null);
   };
 
+  // Build a clean payload that matches the backend pageSchema – similar to how footer data is normalized
+  const buildLinkPayload = (link, orderIndex) => ({
+    pageId: link.pageId,
+    pageName: link.pageName,
+    pageType: link.pageType,
+    icon: link.icon || "",
+    path: link.path,
+    order: orderIndex,
+    children: link.children || [],
+    content: link.content || {},
+  });
+
+  // Save navigation order using the same pattern as footer:
+  // derive normalized data from state, then send it via the ApiContext helper
   const handleSaveOrder = async () => {
     if (!isOrderDirty || savingOrder) return;
 
     try {
       setSavingOrder(true);
 
-      // Persist the current order using a clean payload that matches the backend schema
-      for (let i = 0; i < links.length; i += 1) {
-        const link = links[i];
+      const orderedLinks = links;
 
-        const payload = {
-          pageId: link.pageId,
-          pageName: link.pageName,
-          pageType: link.pageType,
-          icon: link.icon || "",
-          path: link.path,
-          order: i,
-          children: link.children || [],
-          content: link.content || {},
-        };
-
-        // Uses /pages/update/:id which validates against pageSchema (including order)
+      for (let i = 0; i < orderedLinks.length; i += 1) {
+        const link = orderedLinks[i];
+        const payload = buildLinkPayload(link, i);
         await updatePage(link._id, payload);
       }
 
+      // refresh from backend so CMS + main site are in sync, just like footer uses getFooter
+      await getPageLinks();
       setIsOrderDirty(false);
     } finally {
       setSavingOrder(false);
