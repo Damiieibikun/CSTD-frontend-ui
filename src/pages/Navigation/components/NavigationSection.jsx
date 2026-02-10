@@ -40,6 +40,7 @@ const NavigationSection = () => {
   const [editingLink, setEditingLink] = useState(null);
   const [expandedLinks, setExpandedLinks] = useState({});
   const [currentParentId, setCurrentParentId] = useState(null);
+  const [draggedIndex, setDraggedIndex] = useState(null);
   
   // Refs for delete confirmation elements
   const deleteRef = useRef(null);
@@ -77,6 +78,33 @@ const NavigationSection = () => {
 
   const toggleDropdown = (id) => {
     setExpandedLinks(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleDragStart = (index) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+  };
+
+  const handleDrop = (index) => {
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    setLinks(prevLinks => {
+      const updated = [...prevLinks];
+      const [movedItem] = updated.splice(draggedIndex, 1);
+      updated.splice(index, 0, movedItem);
+
+      // Persist new order if backend supports it (order is optional)
+      updated.forEach((link, orderIndex) => {
+        updatePage(link._id, { ...link, order: orderIndex });
+      });
+
+      return updated;
+    });
+
+    setDraggedIndex(null);
   };
 
   const onSubmit = (data) => {   
@@ -264,10 +292,17 @@ const NavigationSection = () => {
         </form>
       )}
 
-      {/* List */}
+      {/* List with drag-and-drop reordering */}
       <div className="space-y-3 transition-all">
-        {links.map((link) => (
-          <div key={link._id} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300">
+        {links.map((link, index) => (
+          <div
+            key={link._id}
+            draggable
+            onDragStart={() => handleDragStart(index)}
+            onDragOver={handleDragOver}
+            onDrop={() => handleDrop(index)}
+            className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300 cursor-move"
+          >
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-gray-50 p-4">
               <div className="flex items-center gap-3">
                 {link.children && link.children.length > 0 && (
