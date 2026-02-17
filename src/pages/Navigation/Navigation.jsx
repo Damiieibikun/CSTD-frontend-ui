@@ -32,7 +32,7 @@ const Navigation = () => {
               >
                 Navigation
               </button>
-              
+              <button
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-300 ${
                   activeSection === 'footer'
                     ? 'bg-white text-indigo-600 shadow-sm transform -translate-y-0.5'

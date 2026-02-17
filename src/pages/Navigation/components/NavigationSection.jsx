@@ -1,13 +1,12 @@
+
 import { useContext, useEffect, useRef, useState } from 'react';
-import { 
-  FaPlus, FaPencilAlt, FaTrash, FaChevronDown, FaWindowClose, 
-  FaTimes, FaBars, FaEye, FaEyeSlash 
-} from "react-icons/fa";
+import { FaPlus, FaPencilAlt, FaTrash, FaChevronDown, FaWindowClose, FaTimes, FaBars } from "react-icons/fa";
 import { ApiContext } from '../../../context/apiContext';
 import { Loader } from '../../../components/Loader';
 import { childLinkSchema, pageSchema } from '../../../validators/formValidation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+
 
 const useClickOutside = (ref, callback) => {
   useEffect(() => {
@@ -16,8 +15,11 @@ const useClickOutside = (ref, callback) => {
         callback();
       }
     };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [ref, callback]);
 };
 
@@ -42,11 +44,12 @@ const NavigationSection = () => {
   const [isOrderDirty, setIsOrderDirty] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
   const [isDragMode, setIsDragMode] = useState(false);
-
+  
+  // Refs for delete confirmation elements
   const deleteRef = useRef(null);
   const deleteChildRef = useRef(null);
-  const sectionRef = useRef(null);
 
+  const sectionRef = useRef(null);
   const schema = currentParentId ? childLinkSchema : pageSchema;
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
@@ -62,10 +65,12 @@ const NavigationSection = () => {
     }
   });
 
+  // Close delete confirmation when clicking outside
   useClickOutside(deleteRef, () => {
     if (isDeleting.open) setIsDeleting({ open: false, id: '' });
   });
 
+  // Close child delete confirmation when clicking outside
   useClickOutside(deleteChildRef, () => {
     if (isDeletingChild.open) setIsDeletingChild({ open: false, childId: '', id: '' });
   });
@@ -88,41 +93,20 @@ const NavigationSection = () => {
 
   const handleDrop = (index) => {
     if (draggedIndex === null || draggedIndex === index) return;
+
     setLinks(prevLinks => {
       const updated = [...prevLinks];
       const [movedItem] = updated.splice(draggedIndex, 1);
       updated.splice(index, 0, movedItem);
+      // mark order as changed; save happens explicitly via "Save Order" button
       setIsOrderDirty(true);
       return updated;
     });
+
     setDraggedIndex(null);
   };
 
-  const toggleVisibility = (linkId, isChild = false, parentId = null) => {
-    setLinks(prevLinks => {
-      if (isChild && parentId) {
-        return prevLinks.map(link => {
-          if (link._id === parentId) {
-            const updatedChildren = link.children.map(child =>
-              child._id === linkId
-                ? { ...child, visible: !(child.visible !== false) }
-                : child
-            );
-            return { ...link, children: updatedChildren };
-          }
-          return link;
-        });
-      } else {
-        return prevLinks.map(link =>
-          link._id === linkId
-            ? { ...link, visible: !(link.visible !== false) }
-            : link
-        );
-      }
-    });
-    setIsOrderDirty(true);
-  };
-
+  // Build a clean payload that matches the backend pageSchema – similar to how footer data is normalized
   const buildLinkPayload = (link, orderIndex) => ({
     pageId: link.pageId,
     pageName: link.pageName,
@@ -132,18 +116,25 @@ const NavigationSection = () => {
     order: orderIndex,
     children: link.children || [],
     content: link.content || {},
-    visible: link.visible !== undefined ? link.visible : true,
   });
 
+  // Save navigation order using the same pattern as footer:
+  // derive normalized data from state, then send it via the ApiContext helper
   const handleSaveOrder = async () => {
     if (!isOrderDirty || savingOrder) return;
+
     try {
       setSavingOrder(true);
-      for (let i = 0; i < links.length; i += 1) {
-        const link = links[i];
+
+      const orderedLinks = links;
+
+      for (let i = 0; i < orderedLinks.length; i += 1) {
+        const link = orderedLinks[i];
         const payload = buildLinkPayload(link, i);
         await updatePage(link._id, payload);
       }
+
+      // refresh from backend so CMS + main site are in sync, just like footer uses getFooter
       await getPageLinks();
       setIsOrderDirty(false);
     } finally {
@@ -151,29 +142,20 @@ const NavigationSection = () => {
     }
   };
 
-  const onSubmit = (data) => {
-    let newLinkObj;
+  const onSubmit = (data) => {   
+    const newLinkObj = {
+      ...data,
+      pageId: data.pageId || data.pageName.toLowerCase().replace(/\s+/g, "-"),
+      pageType: data.pageType || "custom",
+      children: [],
+      content: {}
+    };
 
     if (editingLink && currentParentId) {
       // Editing child
-      const parent = links.find(l => l._id === currentParentId);
-      const existingChild = parent?.children?.find(c => c._id === editingLink);
-      newLinkObj = {
-        ...data,
-        pageId: data.pageId || data.pageName.toLowerCase().replace(/\s+/g, "-"),
-        pageType: data.pageType || "custom",
-        children: existingChild?.children || [],
-        content: existingChild?.content || {},
-        visible: existingChild ? existingChild.visible : true,
-      };
       const updatedLinks = links.map(link =>
         link._id === currentParentId
-          ? {
-              ...link,
-              children: link.children.map(child =>
-                child._id === editingLink ? newLinkObj : child
-              )
-            }
+          ? { ...link, children: link.children.map(child => child._id === editingLink ? newLinkObj : child) }
           : link
       );
       setLinks(updatedLinks);
@@ -181,29 +163,12 @@ const NavigationSection = () => {
       updatePage(currentParentId, updatedParent);
     }
     else if (editingLink) {
-      // Editing top‑level
-      const existingLink = links.find(l => l._id === editingLink);
-      newLinkObj = {
-        ...data,
-        pageId: data.pageId || data.pageName.toLowerCase().replace(/\s+/g, "-"),
-        pageType: data.pageType || "custom",
-        children: existingLink?.children || [],
-        content: existingLink?.content || {},
-        visible: existingLink ? existingLink.visible : true,
-      };
+      // Editing top-level
       setLinks(prev => prev.map(link => link._id === editingLink ? newLinkObj : link));
       updatePage(editingLink, newLinkObj);
     }
     else if (currentParentId) {
-      // Adding new child
-      newLinkObj = {
-        ...data,
-        pageId: data.pageId || data.pageName.toLowerCase().replace(/\s+/g, "-"),
-        pageType: data.pageType || "custom",
-        children: [],
-        content: {},
-        visible: true,
-      };
+      // Adding child
       const updatedLinks = links.map(link =>
         link._id === currentParentId
           ? { ...link, children: [...(link.children || []), newLinkObj] }
@@ -214,15 +179,7 @@ const NavigationSection = () => {
       updatePage(currentParentId, updatedParent);
     }
     else {
-      // Adding new top‑level
-      newLinkObj = {
-        ...data,
-        pageId: data.pageId || data.pageName.toLowerCase().replace(/\s+/g, "-"),
-        pageType: data.pageType || "custom",
-        children: [],
-        content: {},
-        visible: true,
-      };
+      // Adding top-level
       setLinks(prev => [...prev, newLinkObj]);
       createPage(newLinkObj);
     }
@@ -281,10 +238,10 @@ const NavigationSection = () => {
 
   return (
     <div className="p-6 transition-all duration-300" onClick={(e) => e.stopPropagation()}>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <div className="mb-4 md:mb-0">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900">Navigation Links</h2>
-          <p className="text-gray-600 mt-1">Manage your website navigation menu</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 transition-all">
+        <div className="mb-4 md:mb-0 transition-all">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 transition-all">Navigation Links</h2>
+          <p className="text-gray-600 mt-1 transition-all">Manage your website navigation menu</p>
         </div>
         <div className="flex space-x-2">
           {!isAdding && (
@@ -298,7 +255,7 @@ const NavigationSection = () => {
                 reset();
               }}
             >
-              <FaPlus className="w-5 h-5" />
+              <FaPlus className="w-5 h-5 transition-all" />
               Add Link
             </button>
           )}
@@ -325,7 +282,7 @@ const NavigationSection = () => {
           className="mb-6 bg-indigo-50 rounded-xl p-4 border border-indigo-100 transition-all duration-500 ease-in-out"
         >
           <div className="flex justify-between items-center mb-3">
-            <h3 className="font-medium text-indigo-800">
+            <h3 className="font-medium text-indigo-800 transition-all">
               {editingLink ? 'Edit Link' : currentParentId ? 'Add Child Link' : 'Add New Link'}
             </h3>
             <button
@@ -333,11 +290,11 @@ const NavigationSection = () => {
               onClick={() => setIsAdding(false)}
               className="text-indigo-600 hover:text-indigo-800 transition-colors"
             >
-              <FaWindowClose className="w-5 h-5" />
+              <FaWindowClose className="w-5 h-5 transition-all" />
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 transition-all">
             {!currentParentId && (
               <>
                 <div>
@@ -372,7 +329,7 @@ const NavigationSection = () => {
             </div>
           </div>
 
-          <div className="mt-4 flex justify-end gap-2">
+          <div className="mt-4 flex justify-end gap-2 transition-all">
             <button type="button" onClick={() => setIsAdding(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200">
               Cancel
             </button>
@@ -383,7 +340,8 @@ const NavigationSection = () => {
         </form>
       )}
 
-      <div className="space-y-3">
+      {/* List with drag-and-drop reordering */}
+      <div className="space-y-3 transition-all">
         {links.map((link, index) => (
           <div
             key={link._id}
@@ -413,31 +371,23 @@ const NavigationSection = () => {
 
               <div className="flex gap-2 mt-2 md:mt-0">
                 {!isDeleting.open || isDeleting.id !== link._id ? (
-                  <div className="flex gap-2">
-                    {/* Visibility Toggle */}
-                    <button
-                      onClick={() => toggleVisibility(link._id)}
-                      className="p-2 text-gray-600 hover:text-gray-800 transition-colors"
-                      title={link.visible !== false ? 'Hide link' : 'Show link'}
-                    >
-                      {link.visible !== false ? <FaEye /> : <FaEyeSlash />}
-                    </button>
-                    <button
-                      onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); startEditLink(link._id); }}
+                  <div className="flex gap-2 transition-all duration-300">
+                    <button 
+                      onClick={() => {  window.scrollTo({ top: 0, behavior: 'smooth' }); startEditLink(link._id); }} 
                       className="p-2 text-indigo-600 hover:text-indigo-800 transition-colors"
                       title="Edit"
                     >
                       <FaPencilAlt />
                     </button>
-                    <button
-                      onClick={() => setIsDeleting({ open: true, id: link._id })}
+                    <button 
+                      onClick={() => setIsDeleting({ open: true, id: link._id })} 
                       className="p-2 text-red-600 hover:text-red-800 transition-colors"
                       title="Delete"
                     >
                       <FaTrash />
                     </button>
-                    <button
-                      onClick={() => { scrollToSection(); setCurrentParentId(link._id); setIsAdding(true); setEditingLink(null); reset(); }}
+                    <button 
+                      onClick={() => { scrollToSection(); setCurrentParentId(link._id); setIsAdding(true); setEditingLink(null); reset(); }} 
                       className="flex items-center gap-1 text-sm bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1 rounded-lg transition-colors duration-200"
                       title="Add Child"
                     >
@@ -458,12 +408,12 @@ const NavigationSection = () => {
                     </button>
                   </div>
                 ) : (
-                  <div
+                  <div 
                     ref={deleteRef}
-                    className="flex gap-2 items-center text-sm bg-gray-600 text-white p-2 rounded-sm transition-all duration-300"
+                    className="flex gap-2 items-center text-sm bg-gray-600 text-white p-2 rounded-sm transition-all duration-300 transform translate-x-0"
                   >
                     <span className="font-medium">Delete this link?</span>
-                    <button
+                    <button  
                       onClick={() => {
                         deleteLink(link._id);
                         setIsDeleting({ open: false, id: '' });
@@ -473,8 +423,8 @@ const NavigationSection = () => {
                     >
                       <FaTrash className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => setIsDeleting({ open: false, id: '' })}
+                    <button 
+                      onClick={() => setIsDeleting({ open: false, id: '' })} 
                       className="p-1 hover:bg-indigo-700 rounded transition-colors"
                       title="Cancel"
                     >
@@ -486,10 +436,10 @@ const NavigationSection = () => {
             </div>
 
             {expandedLinks[link._id] && link.children && link.children.length > 0 && (
-              <div className="bg-gray-50 border-t border-gray-200">
+              <div className="bg-gray-50 border-t border-gray-200 transition-all duration-300">
                 <div className="pl-4 md:pl-14 pr-4 py-3 space-y-3">
                   {link.children.map(child => (
-                    <div key={child._id} className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
+                    <div key={child._id} className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-200 transition-colors hover:bg-gray-50">
                       <div>
                         <div className="font-medium text-gray-900">{child.pageName}</div>
                         <div className="text-sm text-gray-500">{child.path} ({child.pageType})</div>
@@ -497,24 +447,16 @@ const NavigationSection = () => {
 
                       <div className="flex gap-2">
                         {!isDeletingChild.open || isDeletingChild.childId !== child._id ? (
-                          <div className="flex gap-2">
-                            {/* Child Visibility Toggle */}
-                            <button
-                              onClick={() => toggleVisibility(child._id, true, link._id)}
-                              className="p-1 text-gray-600 hover:text-gray-800 transition-colors"
-                              title={child.visible !== false ? 'Hide link' : 'Show link'}
-                            >
-                              {child.visible !== false ? <FaEye /> : <FaEyeSlash />}
-                            </button>
-                            <button
-                              onClick={() => { scrollToSection(); startEditLink(child._id, true, link._id); }}
+                          <div className="flex gap-2 transition-all duration-300">
+                            <button 
+                              onClick={() => { scrollToSection(); startEditLink(child._id, true, link._id); }} 
                               className="p-1 text-indigo-600 hover:text-indigo-800 transition-colors"
                               title="Edit"
                             >
                               <FaPencilAlt />
                             </button>
-                            <button
-                              onClick={() => setIsDeletingChild({ open: true, childId: child._id, id: link._id })}
+                            <button 
+                              onClick={() => setIsDeletingChild({ open: true, childId: child._id, id: link._id })} 
                               className="p-1 text-red-600 hover:text-red-800 transition-colors"
                               title="Delete"
                             >
@@ -522,12 +464,12 @@ const NavigationSection = () => {
                             </button>
                           </div>
                         ) : (
-                          <div
+                          <div 
                             ref={deleteChildRef}
-                            className="flex gap-2 items-center text-sm bg-gray-600 text-white p-1 px-2 rounded-sm"
+                            className="flex gap-2 items-center text-sm bg-gray-600 text-white p-1 px-2 rounded-sm transition-all duration-300"
                           >
                             <span className="font-medium">Delete child link?</span>
-                            <button
+                            <button 
                               onClick={() => {
                                 deleteLink(child._id, true, link._id);
                                 setIsDeletingChild({ open: false, childId: '', id: '' });
@@ -537,8 +479,8 @@ const NavigationSection = () => {
                             >
                               <FaTrash className="w-3 h-3" />
                             </button>
-                            <button
-                              onClick={() => setIsDeletingChild({ open: false, childId: '', id: '' })}
+                            <button 
+                              onClick={() => setIsDeletingChild({ open: false, childId: '', id: '' })} 
                               className="p-1 hover:bg-indigo-700 rounded transition-colors"
                               title="Cancel"
                             >
@@ -557,12 +499,26 @@ const NavigationSection = () => {
       </div>
 
       {links.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-gray-500 transition-all">
           No navigation links added yet. Click "Add Link" to get started.
         </div>
-      )}
+      )}     
     </div>
   );
 };
 
 export default NavigationSection;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
