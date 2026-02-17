@@ -44,6 +44,7 @@ const NavigationSection = () => {
   const [isOrderDirty, setIsOrderDirty] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
   const [isDragMode, setIsDragMode] = useState(false);
+  const [togglingHiddenId, setTogglingHiddenId] = useState(null);
   
   // Refs for delete confirmation elements
   const deleteRef = useRef(null);
@@ -120,11 +121,19 @@ const NavigationSection = () => {
   });
 
   const handleToggleHidden = async (link, index) => {
+    if (togglingHiddenId === link._id) return;
+    setTogglingHiddenId(link._id);
     const newHidden = !(link.isHidden ?? false);
     const payload = buildLinkPayload({ ...link, isHidden: newHidden }, index);
     setLinks(prev => prev.map(l => l._id === link._id ? { ...l, isHidden: newHidden } : l));
-    await updatePage(link._id, payload);
-    await getPageLinks();
+    try {
+      await updatePage(link._id, payload);
+      await getPageLinks();
+    } catch (err) {
+      setLinks(prev => prev.map(l => l._id === link._id ? { ...l, isHidden: link.isHidden } : l));
+    } finally {
+      setTogglingHiddenId(null);
+    }
   };
 
   // Save navigation order using the same pattern as footer:
@@ -152,17 +161,22 @@ const NavigationSection = () => {
   };
 
   const onSubmit = (data) => {   
-    const newLinkObj = {
-      ...data,
-      pageId: data.pageId || data.pageName.toLowerCase().replace(/\s+/g, "-"),
-      pageType: data.pageType || "custom",
-      children: [],
-      content: {},
-      isHidden: data.isHidden ?? false,
-    };
+    let newLinkObj;
 
     if (editingLink && currentParentId) {
-      // Editing child
+      // Editing child – preserve existing child fields
+      const parent = links.find(l => l._id === currentParentId);
+      const existingChild = parent?.children?.find(c => c._id === editingLink);
+      newLinkObj = {
+        ...existingChild,
+        ...data,
+        pageId: data.pageId || data.pageName?.toLowerCase().replace(/\s+/g, "-") || existingChild?.pageId,
+        pageName: data.pageName,
+        pageType: data.pageType || "custom",
+        path: data.path,
+        icon: data.icon || "",
+        isHidden: existingChild?.isHidden ?? false,
+      };
       const updatedLinks = links.map(link =>
         link._id === currentParentId
           ? { ...link, children: link.children.map(child => child._id === editingLink ? newLinkObj : child) }
@@ -173,12 +187,33 @@ const NavigationSection = () => {
       updatePage(currentParentId, updatedParent);
     }
     else if (editingLink) {
-      // Editing top-level
-      setLinks(prev => prev.map(link => link._id === editingLink ? newLinkObj : link));
+      // Editing top-level – preserve isHidden, children, content, order
+      const existingLink = links.find(l => l._id === editingLink);
+      const orderIndex = links.findIndex(l => l._id === editingLink);
+      newLinkObj = {
+        pageId: data.pageId || data.pageName?.toLowerCase().replace(/\s+/g, "-"),
+        pageName: data.pageName,
+        pageType: data.pageType || "custom",
+        path: data.path,
+        icon: data.icon || "",
+        order: existingLink?.order ?? orderIndex,
+        children: existingLink?.children || [],
+        content: existingLink?.content || {},
+        isHidden: existingLink?.isHidden ?? false,
+      };
+      setLinks(prev => prev.map(link => link._id === editingLink ? { ...link, ...newLinkObj } : link));
       updatePage(editingLink, newLinkObj);
     }
     else if (currentParentId) {
       // Adding child
+      newLinkObj = {
+        ...data,
+        pageId: data.pageId || data.pageName?.toLowerCase().replace(/\s+/g, "-"),
+        pageType: data.pageType || "custom",
+        children: [],
+        content: {},
+        isHidden: false,
+      };
       const updatedLinks = links.map(link =>
         link._id === currentParentId
           ? { ...link, children: [...(link.children || []), newLinkObj] }
@@ -190,6 +225,14 @@ const NavigationSection = () => {
     }
     else {
       // Adding top-level
+      newLinkObj = {
+        ...data,
+        pageId: data.pageId || data.pageName.toLowerCase().replace(/\s+/g, "-"),
+        pageType: data.pageType || "custom",
+        children: [],
+        content: {},
+        isHidden: false,
+      };
       setLinks(prev => [...prev, newLinkObj]);
       createPage(newLinkObj);
     }
@@ -388,10 +431,17 @@ const NavigationSection = () => {
                   <div className="flex gap-2 transition-all duration-300">
                     <button 
                       onClick={() => handleToggleHidden(link, index)}
-                      className={`p-2 transition-colors ${link.isHidden ? 'text-amber-600 hover:text-amber-800' : 'text-emerald-600 hover:text-emerald-800'}`}
+                      disabled={togglingHiddenId === link._id}
+                      className={`p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${link.isHidden ? 'text-amber-600 hover:text-amber-800' : 'text-emerald-600 hover:text-emerald-800'}`}
                       title={link.isHidden ? 'Show in navigation' : 'Hide from navigation'}
                     >
-                      {link.isHidden ? <FaEyeSlash /> : <FaEye />}
+                      {togglingHiddenId === link._id ? (
+                        <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden />
+                      ) : link.isHidden ? (
+                        <FaEyeSlash />
+                      ) : (
+                        <FaEye />
+                      )}
                     </button>
                     <button 
                       onClick={() => {  window.scrollTo({ top: 0, behavior: 'smooth' }); startEditLink(link._id); }} 
