@@ -96,6 +96,7 @@ const pageSchema = childLinkSchema.extend({
   pageType: z.string().min(1, "Page type is required"),
   children: z.array(z.any()).optional(),
   content: z.any().optional(),
+  isHidden: z.boolean().optional().default(false),
 });
 
 // News

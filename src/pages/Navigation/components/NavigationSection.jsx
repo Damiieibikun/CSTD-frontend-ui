@@ -1,6 +1,6 @@
 
 import { useContext, useEffect, useRef, useState } from 'react';
-import { FaPlus, FaPencilAlt, FaTrash, FaChevronDown, FaWindowClose, FaTimes, FaBars } from "react-icons/fa";
+import { FaPlus, FaPencilAlt, FaTrash, FaChevronDown, FaWindowClose, FaTimes, FaBars, FaEye, FaEyeSlash } from "react-icons/fa";
 import { ApiContext } from '../../../context/apiContext';
 import { Loader } from '../../../components/Loader';
 import { childLinkSchema, pageSchema } from '../../../validators/formValidation';
@@ -116,7 +116,16 @@ const NavigationSection = () => {
     order: orderIndex,
     children: link.children || [],
     content: link.content || {},
+    isHidden: link.isHidden ?? false,
   });
+
+  const handleToggleHidden = async (link, index) => {
+    const newHidden = !(link.isHidden ?? false);
+    const payload = buildLinkPayload({ ...link, isHidden: newHidden }, index);
+    setLinks(prev => prev.map(l => l._id === link._id ? { ...l, isHidden: newHidden } : l));
+    await updatePage(link._id, payload);
+    await getPageLinks();
+  };
 
   // Save navigation order using the same pattern as footer:
   // derive normalized data from state, then send it via the ApiContext helper
@@ -148,7 +157,8 @@ const NavigationSection = () => {
       pageId: data.pageId || data.pageName.toLowerCase().replace(/\s+/g, "-"),
       pageType: data.pageType || "custom",
       children: [],
-      content: {}
+      content: {},
+      isHidden: data.isHidden ?? false,
     };
 
     if (editingLink && currentParentId) {
@@ -203,7 +213,8 @@ const NavigationSection = () => {
         path: linkToEdit.path,
         icon: linkToEdit.icon || "",
         children: [],
-        content: {}
+        content: {},
+        isHidden: linkToEdit.isHidden ?? false,
       });
       setIsAdding(true);
       setEditingLink(linkId);
@@ -362,6 +373,9 @@ const NavigationSection = () => {
                   <div className="font-medium text-gray-900 flex items-center gap-2">
                     {link.icon && <span className={link.icon} />}
                     {link.pageName}
+                    {link.isHidden && (
+                      <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-normal">Hidden</span>
+                    )}
                   </div>
                   <div className="text-sm text-gray-500">
                     {link.path} | {link.pageId} ({link.pageType})
@@ -372,6 +386,13 @@ const NavigationSection = () => {
               <div className="flex gap-2 mt-2 md:mt-0">
                 {!isDeleting.open || isDeleting.id !== link._id ? (
                   <div className="flex gap-2 transition-all duration-300">
+                    <button 
+                      onClick={() => handleToggleHidden(link, index)}
+                      className={`p-2 transition-colors ${link.isHidden ? 'text-amber-600 hover:text-amber-800' : 'text-emerald-600 hover:text-emerald-800'}`}
+                      title={link.isHidden ? 'Show in navigation' : 'Hide from navigation'}
+                    >
+                      {link.isHidden ? <FaEyeSlash /> : <FaEye />}
+                    </button>
                     <button 
                       onClick={() => {  window.scrollTo({ top: 0, behavior: 'smooth' }); startEditLink(link._id); }} 
                       className="p-2 text-indigo-600 hover:text-indigo-800 transition-colors"
