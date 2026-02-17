@@ -1,6 +1,6 @@
 
 import { useContext, useEffect, useRef, useState } from 'react';
-import { FaPlus, FaPencilAlt, FaTrash, FaChevronDown, FaWindowClose, FaTimes, FaBars, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaPlus, FaPencilAlt, FaTrash, FaChevronDown, FaWindowClose, FaTimes, FaBars, FaEye, FaEyeSlash, FaGripVertical, FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { ApiContext } from '../../../context/apiContext';
 import { Loader } from '../../../components/Loader';
 import { childLinkSchema, pageSchema } from '../../../validators/formValidation';
@@ -84,27 +84,57 @@ const NavigationSection = () => {
     setExpandedLinks(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleDragStart = (index) => {
+  const handleDragStart = (e, index) => {
     setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
+    const card = e.currentTarget.closest('[data-drag-card]');
+    if (card) {
+      e.dataTransfer.setDragImage(card, 24, 24);
+    }
   };
 
-  const handleDragOver = (event) => {
-    event.preventDefault();
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
   };
 
-  const handleDrop = (index) => {
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, index) => {
+    e.preventDefault();
     if (draggedIndex === null || draggedIndex === index) return;
 
     setLinks(prevLinks => {
       const updated = [...prevLinks];
       const [movedItem] = updated.splice(draggedIndex, 1);
       updated.splice(index, 0, movedItem);
-      // mark order as changed; save happens explicitly via "Save Order" button
-      setIsOrderDirty(true);
       return updated;
     });
-
+    setIsOrderDirty(true);
     setDraggedIndex(null);
+  };
+
+  const handleMoveUp = (index) => {
+    if (index <= 0) return;
+    setLinks(prev => {
+      const updated = [...prev];
+      [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+      return updated;
+    });
+    setIsOrderDirty(true);
+  };
+
+  const handleMoveDown = (index) => {
+    if (index >= links.length - 1) return;
+    setLinks(prev => {
+      const updated = [...prev];
+      [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+      return updated;
+    });
+    setIsOrderDirty(true);
   };
 
   // Build a clean payload that matches the backend pageSchema – similar to how footer data is normalized
@@ -145,16 +175,15 @@ const NavigationSection = () => {
       setSavingOrder(true);
 
       const orderedLinks = links;
-
       for (let i = 0; i < orderedLinks.length; i += 1) {
         const link = orderedLinks[i];
         const payload = buildLinkPayload(link, i);
         await updatePage(link._id, payload);
       }
 
-      // refresh from backend so CMS + main site are in sync, just like footer uses getFooter
       await getPageLinks();
       setIsOrderDirty(false);
+      setIsDragMode(false);
     } finally {
       setSavingOrder(false);
     }
@@ -326,6 +355,9 @@ const NavigationSection = () => {
           >
             {savingOrder ? 'Saving...' : 'Save Order'}
           </button>
+          {isOrderDirty && (
+            <span className="text-amber-600 text-sm font-medium hidden sm:inline">Unsaved order</span>
+          )}
         </div>
       </div>
 
@@ -394,25 +426,74 @@ const NavigationSection = () => {
         </form>
       )}
 
+      {/* Reorder mode banner */}
+      {isDragMode && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex flex-wrap items-center gap-2">
+          <FaGripVertical className="text-amber-600 w-5 h-5" />
+          <span className="text-amber-800 font-medium text-sm">Reorder mode — drag items or use ↑↓ arrows</span>
+        </div>
+      )}
+
       {/* List with drag-and-drop reordering */}
       <div className="space-y-3 transition-all">
         {links.map((link, index) => (
           <div
             key={link._id}
-            draggable={isDragMode}
-            onDragStart={isDragMode ? () => handleDragStart(index) : undefined}
-            onDragOver={isDragMode ? handleDragOver : undefined}
-            onDrop={isDragMode ? () => handleDrop(index) : undefined}
-            className={`border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300 ${isDragMode ? 'cursor-grab bg-amber-50' : 'cursor-default'}`}
+            data-drag-card
+            onDragOver={isDragMode ? (e) => handleDragOver(e, index) : undefined}
+            onDrop={isDragMode ? (e) => handleDrop(e, index) : undefined}
+            className={`border rounded-xl overflow-hidden transition-all duration-200 ${
+              isDragMode
+                ? `bg-amber-50 border-amber-200 hover:border-amber-400 ${draggedIndex === index ? 'opacity-50 scale-[0.98] shadow-lg' : 'hover:shadow-md'}`
+                : 'border-gray-200 hover:shadow-md'
+            }`}
           >
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-gray-50 p-4">
-              <div className="flex items-center gap-3">
-                {link.children && link.children.length > 0 && (
-                  <button onClick={() => toggleDropdown(link._id)} className="text-gray-500 hover:text-gray-700 transition-colors">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {isDragMode && (
+                  <>
+                    <div
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragEnd={handleDragEnd}
+                      className="flex flex-col gap-0.5 shrink-0 cursor-grab active:cursor-grabbing p-1 -m-1 text-amber-600 hover:bg-amber-100 rounded touch-none"
+                      title="Drag to reorder"
+                    >
+                      <FaGripVertical className="w-4 h-4" />
+                    </div>
+                    <div className="flex flex-col gap-0.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveUp(index)}
+                        disabled={index === 0}
+                        className="p-1 text-amber-600 hover:bg-amber-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move up"
+                      >
+                        <FaArrowUp className="w-3 h-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveDown(index)}
+                        disabled={index === links.length - 1}
+                        className="p-1 text-amber-600 hover:bg-amber-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move down"
+                      >
+                        <FaArrowDown className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </>
+                )}
+                {!isDragMode && link.children && link.children.length > 0 && (
+                  <button onClick={() => toggleDropdown(link._id)} className="text-gray-500 hover:text-gray-700 transition-colors shrink-0">
                     <FaChevronDown className={`w-5 h-5 transition-transform duration-300 ${expandedLinks[link._id] ? 'rotate-180' : ''}`} />
                   </button>
                 )}
-                <div>
+                {isDragMode && (
+                  <span className="shrink-0 w-6 h-6 flex items-center justify-center bg-amber-200 text-amber-800 text-xs font-bold rounded-full">
+                    {index + 1}
+                  </span>
+                )}
+                <div className="min-w-0">
                   <div className="font-medium text-gray-900 flex items-center gap-2">
                     {link.icon && <span className={link.icon} />}
                     {link.pageName}
