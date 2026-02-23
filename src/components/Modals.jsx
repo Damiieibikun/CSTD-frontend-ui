@@ -26,22 +26,24 @@ const Modals = ({
           </button>
         </div>
 
-        {/* Content */}
-        <div className="px-6 py-4">
-          <div className="flex items-start space-x-4">
-            <div className={`p-2 rounded-full ${iconStyle}`}>
-              {icon}
+        {/* Content - icon/caption only when provided */}
+        {(icon || caption) && (
+          <div className="px-6 py-4">
+            <div className="flex items-start space-x-4">
+              {icon && (
+                <div className={`p-2 rounded-full ${iconStyle || ''}`}>
+                  {icon}
+                </div>
+              )}
+              {caption && <p className="text-gray-600">{caption}</p>}
             </div>
-            <p className="text-gray-600">{caption}</p>
           </div>
-
-          {/* Error message */}
-          {error && (
-            <div className="mt-4 text-sm text-red-600 font-semibold">
-              * {error}
-            </div>
-          )}
-        </div>
+        )}
+        {error && (
+          <div className="px-6 pt-2">
+            <div className="text-sm text-red-600 font-semibold">* {error}</div>
+          </div>
+        )}
         <div className="p-2">
           {form}
         </div>

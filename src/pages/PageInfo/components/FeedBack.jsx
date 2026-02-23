@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import {FaEye, FaEyeSlash, FaTrash, FaEnvelope, FaUser, FaPhone, FaComment, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaTrash, FaEnvelope, FaUser, FaPhone, FaComment, FaExclamationTriangle, FaCheckCircle, FaQuestionCircle } from 'react-icons/fa';
 import Modals from '../../../components/Modals';
 import { ApiContext } from '../../../context/apiContext';
 import { Loader } from '../../../components/Loader';
@@ -115,7 +115,10 @@ const FeedBack = () => {
                   </div>
                   <div className="ml-2 sm:ml-4">
                     <div className="text-xs sm:text-sm font-medium text-gray-900">{feedback.name}</div>
-                    <div className="text-xs sm:text-sm text-gray-500">{feedback.phone}</div>
+                    <div className="text-xs sm:text-sm text-gray-500">{feedback.phone || '—'}</div>
+                    {feedback.source === 'have_questions' && (
+                      <span className="inline-block mt-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">Have Questions</span>
+                    )}
                   </div>
                 </div>
               </td>
@@ -167,43 +170,86 @@ const FeedBack = () => {
       feedbackList
         .filter(f => f._id === expandedFeedback)
         .map(feedback => (
-          <Modals 
-            key={feedback._id}
-            modalStyles={'max-w-[65%]'}                
-            cancel='Close'
-            form={
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">Feedback Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">Customer Information</h4>
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <FaUser className="text-gray-400 mr-2 text-sm" />
-                        <span className="text-gray-700 text-sm sm:text-base">{feedback.name}</span>
+          feedback.source === 'have_questions' ? (
+            <Modals
+              key={feedback._id}
+              title="Have Questions — Submission"
+              caption="Submitted from the Have Questions section on the public site."
+              icon={<FaQuestionCircle size={24} className="text-indigo-600" />}
+              iconStyle="bg-indigo-100"
+              modalStyles="max-w-[32rem]"
+              cancel="Close"
+              form={
+                <div className="space-y-4">
+                  <div className="rounded-xl border-2 border-indigo-100 bg-indigo-50/50 p-4 sm:p-5">
+                    <h4 className="text-sm font-semibold text-indigo-800 mb-3 flex items-center gap-2">
+                      <FaUser className="text-indigo-600" />
+                      Submitter
+                    </h4>
+                    <div className="space-y-2 text-gray-800">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">Name:</span>
+                        <span>{feedback.name}</span>
                       </div>
-                      <div className="flex items-center">
-                        <FaEnvelope className="text-gray-400 mr-2 text-sm" />
-                        <span className="text-gray-700 text-sm sm:text-base">{feedback.email}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">Email:</span>
+                        <a href={`mailto:${feedback.email}`} className="text-indigo-600 hover:underline">{feedback.email}</a>
                       </div>
-                      <div className="flex items-center">
-                        <FaPhone className="text-gray-400 mr-2 text-sm" />
-                        <span className="text-gray-700 text-sm sm:text-base">{feedback.phone}</span>
+                      <div className="text-xs text-gray-500 mt-2">
+                        Received {feedback.createdAt ? new Date(feedback.createdAt).toLocaleString() : '—'}
                       </div>
                     </div>
                   </div>
-                  <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">Message</h4>
-                    <div className="flex">
-                      <FaComment className="text-gray-400 mr-2 mt-1 flex-shrink-0 text-sm" />
-                      <p className="text-gray-700 text-sm sm:text-base">{feedback.message}</p>
+                  <div className="rounded-xl border-2 border-slate-200 bg-slate-50 p-4 sm:p-5">
+                    <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                      <FaComment className="text-slate-500" />
+                      Question / Message
+                    </h4>
+                    <p className="text-slate-800 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">{feedback.message}</p>
+                  </div>
+                </div>
+              }
+              closeModal={() => setExpandedFeedback(null)}
+            />
+          ) : (
+            <Modals
+              key={feedback._id}
+              title="Feedback Details"
+              modalStyles="max-w-[65%]"
+              cancel="Close"
+              form={
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
+                      <h4 className="text-sm font-medium text-gray-500 mb-2">Customer Information</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <FaUser className="text-gray-400 mr-2 text-sm" />
+                          <span className="text-gray-700 text-sm sm:text-base">{feedback.name}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <FaEnvelope className="text-gray-400 mr-2 text-sm" />
+                          <span className="text-gray-700 text-sm sm:text-base">{feedback.email}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <FaPhone className="text-gray-400 mr-2 text-sm" />
+                          <span className="text-gray-700 text-sm sm:text-base">{feedback.phone || '—'}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
+                      <h4 className="text-sm font-medium text-gray-500 mb-2">Message</h4>
+                      <div className="flex">
+                        <FaComment className="text-gray-400 mr-2 mt-1 flex-shrink-0 text-sm" />
+                        <p className="text-gray-700 text-sm sm:text-base">{feedback.message}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            }
-            closeModal={() => setExpandedFeedback(null)}
-          />
+              }
+              closeModal={() => setExpandedFeedback(null)}
+            />
+          )
         ))
     )}
     
